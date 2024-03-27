@@ -25,8 +25,9 @@ const port = appConfig.server.port;
 //const httpPort = appConfig.server.httpsPort;
 const username = encodeURIComponent(databaseConfig.database.username);
 const password = encodeURIComponent(databaseConfig.database.password);
-const uri = `mongodb://${username}:${password}@${databaseConfig.database.host}:${databaseConfig.database.port}/${databaseConfig.database.dbName}`;
-
+//const uri = `mongodb://${username}:${password}@${databaseConfig.database.host}:${databaseConfig.database.port}/${databaseConfig.database.dbName}`;
+//local uri:
+const uri = `mongodb://${databaseConfig.database.host}:${databaseConfig.database.port}/${databaseConfig.database.dbName}`;
 MongoClient.connect(uri, {
   maxPoolSize: 50,
   wtimeoutMS: 2500,
