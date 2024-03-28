@@ -4,6 +4,9 @@ import appConfig from "./config/app_config.mjs";
 import databaseConfig from "./config/database_config.mjs";
 import UserService from "./services/user_service.mjs";
 import TokenService from "./services/token_service.mjs";
+import QuestionService from "./services/questions_service.mjs";
+import ChallengeService from "./services/challenges_service.mjs";
+import RouteService from "./services/routes_service.mjs";
 
 // Uncomment to enable https
 
@@ -39,6 +42,9 @@ MongoClient.connect(uri, {
   .then(async (client) => {
     await UserService.connectDatabase(client);
     await TokenService.connectDatabase(client);
+    await QuestionService.connectDatabase(client);
+    await ChallengeService.connectDatabase(client);
+    await RouteService.connectDatabase(client);
     // const httpsServer = https.createServer(cred, app);
     // httpsServer.listen(port, () => {
     //   console.log(`https server listening`);
