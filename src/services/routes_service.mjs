@@ -35,7 +35,12 @@ export default class RouteService {
       const addedRouteId = await RouteDAO.addRouteToDB(routeDocument);
       const route = await RouteDAO.getRouteByIDFromDB(addedRouteId);
 
-      return { route: route };
+      const filteredRoute = PatternUtil.filterParametersFromObject(
+        route,
+        ["created_on", "deleted_on"]
+      );
+
+      return { route: filteredRoute };
     } catch (e) {
       return e.message;
     }
@@ -49,11 +54,17 @@ export default class RouteService {
       } else {
         if (existingRoute.challenges != null) {
           for (let i = 0; i < existingRoute.challenges.length; i++) {
-            const quesResponse = await ChallengeService.getChallengeByID(existingRoute.challenges[i]);
-            existingRoute.challenges[i] = quesResponse;
+            const chalResponse = await ChallengeService.getChallengeByID(existingRoute.challenges[i]);
+            existingRoute.challenges[i] = chalResponse;
           }
         }
-        return existingRoute;
+
+        const filteredRoute = PatternUtil.filterParametersFromObject(
+          existingRoute,
+          ["created_on", "deleted_on"]
+        );
+
+        return filteredRoute;
       }
     } catch (e) {
       return e.message;

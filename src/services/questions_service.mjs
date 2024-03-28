@@ -38,7 +38,12 @@ export default class QuestionService {
       const addedQuesId = await QuestionDAO.addQuestionToDB(quesDocument);
       const ques = await QuestionDAO.getQuestionByIDFromDB(addedQuesId);
 
-      return { question: ques };
+      const filteredQuestion = PatternUtil.filterParametersFromObject(
+        ques,
+        ["created_on", "deleted_on"]
+      );
+
+      return { question: filteredQuestion };
     } catch (e) {
       return e.message;
     }
@@ -50,7 +55,13 @@ export default class QuestionService {
       if (!existingQues) {
         return "No question found for this ID";
       } else {
-        return existingQues;
+
+        const filteredQuestion = PatternUtil.filterParametersFromObject(
+          existingQues,
+          ["created_on", "deleted_on"]
+        );
+
+        return filteredQuestion;
       }
     } catch (e) {
       return e.message;

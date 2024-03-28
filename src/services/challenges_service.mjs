@@ -33,7 +33,12 @@ export default class ChallengeService {
       const addedChalId = await ChallengeDAO.addChallengeToDB(chalDocument);
       const challenge = await ChallengeDAO.getChallengeByIDFromDB(addedChalId);
 
-      return { challenge: challenge };
+      const filteredChallenge = PatternUtil.filterParametersFromObject(
+        challenge,
+        ["created_on", "deleted_on"]
+      );
+
+      return { challenge: filteredChallenge };
     } catch (e) {
       return e.message;
     }
@@ -51,7 +56,11 @@ export default class ChallengeService {
             existingChallenge.questions[i] = quesResponse;
           }
         }
-        return existingChallenge;
+        const filteredChallenge = PatternUtil.filterParametersFromObject(
+          existingChallenge,
+          ["created_on", "deleted_on"]
+        );
+        return filteredChallenge;
       }
     } catch (e) {
       return e.message;

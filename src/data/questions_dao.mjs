@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import databaseConfig from "../config/database_config.mjs";
 
 let quescon;
@@ -30,7 +31,7 @@ export default class QuestionDAO {
 
   static async getQuestionByIDFromDB(id) {
     try {
-      const ques = await quescon.findOne({ _id: id });
+      const ques = await quescon.findOne({ _id: new ObjectId(id) });
       return ques;
     } catch (e) {
       console.error(`Unable to get question by ID: ${e}`);
