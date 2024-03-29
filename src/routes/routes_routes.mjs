@@ -12,16 +12,10 @@ const routes = "/route";
 router
   .route(routes + "/create")
   .post(
-    checkRequiredFieldsMiddleware([
-      "intro_video",
-      "total_time",
-      "challenges",
-    ]),
+    checkRequiredFieldsMiddleware(["intro_video", "total_time"]),
     RouteController.apiCreateRoute
   );
 
-router
-  .route(routes + "/details")
-  .get(RouteController.apiGetRoute);
+router.route(routes + "/details").get(RouteController.apiGetRoute);
 
 export default router;

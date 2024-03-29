@@ -38,4 +38,14 @@ export default class QuestionDAO {
       return null;
     }
   }
+
+  static async getQuestionsByChallengeFromDB(challenge) {
+    try {
+      const ques = await quescon.find({ challenge: new ObjectId(challenge) }).toArray();
+      return ques;
+    } catch (e) {
+      console.error(`Unable to get questions by challenge: ${e}`);
+      return null;
+    }
+  }
 }

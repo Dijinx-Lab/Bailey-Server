@@ -12,16 +12,12 @@ const quesRoute = "/question";
 router
   .route(quesRoute + "/create")
   .post(
-    checkRequiredFieldsMiddleware([
-      "score",
-      "type",
-      "question",
-    ]),
+    checkRequiredFieldsMiddleware(["score", "type", "question", "challenge"]),
     QuestionController.apiCreateQuestion
   );
 
-  router
-  .route(quesRoute + "/details")
-  .get(QuestionController.apiGetQuestion);
+router.route(quesRoute + "/details").get(QuestionController.apiGetQuestion);
+
+router.route(quesRoute + "/details-by-challenge").get(QuestionController.apiGetQuestionsByChallenge);
 
 export default router;

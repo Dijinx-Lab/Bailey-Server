@@ -17,7 +17,7 @@ export default class TeamService {
     }
   }
 
-  static async addTeam(score, active_challenge, completed_challenges) {
+  static async addTeam(name, score, active_challenge, completed_challenges) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
@@ -41,6 +41,7 @@ export default class TeamService {
       }
 
       const teamDocument = {
+        name: name,
         team_code: team_code,
         score: score,
         active_challenge: object_active_challenge,

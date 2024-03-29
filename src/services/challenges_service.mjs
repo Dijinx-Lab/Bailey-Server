@@ -1,10 +1,7 @@
 import ChallengeDAO from "../data/challenges_dao.mjs";
 import { ObjectId } from "mongodb";
-import AuthUtil from "../utility/auth_util.mjs";
 import PatternUtil from "../utility/pattern_util.mjs";
-import TokenUtil from "../utility/token_util.mjs";
-import TokenService from "./token_service.mjs";
-import QuestionService from "./questions_service.mjs";
+import RouteService from "./routes_service.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {
@@ -15,17 +12,26 @@ export default class ChallengeService {
     }
   }
 
-  static async addChallenge(longitude, latitude, questions, description) {
+  static async addChallenge(
+    name,
+    difficulty,
+    longitude,
+    latitude,
+    route,
+    description
+  ) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
 
-      const questionIds = questions.map((question) => new ObjectId(question));
+      const new_route_id = new ObjectId(route);
 
       const chalDocument = {
+        name: name,
+        difficulty: difficulty,
         longitude: longitude,
         latitude: latitude,
-        questions: questionIds,
+        route: new_route_id,
         description: description,
         created_on: createdOn,
         deleted_on: deletedOn,
@@ -53,17 +59,12 @@ export default class ChallengeService {
       if (!existingChallenge) {
         return "No challenge found for this ID";
       } else {
-        if (existingChallenge.questions != null) {
-          for (let i = 0; i < existingChallenge.questions.length; i++) {
-            const quesResponse = await QuestionService.getQuestionByID(
-              existingChallenge.questions[i]
-            );
-            if (typeof quesResponse === "string") {
-              existingChallenge.questions.splice(i, 1);
-              i--;
-            } else {
-              existingChallenge.questions[i] = quesResponse;
-            }
+        if (existingChallenge.route != null) {
+          const chalResponse = await RouteService.getRouteByID(
+            existingChallenge.route
+          );
+          if (typeof chalResponse !== "string") {
+            existingChallenge.route = chalResponse;
           }
         }
         const filteredChallenge = PatternUtil.filterParametersFromObject(
@@ -71,6 +72,36 @@ export default class ChallengeService {
           ["created_on", "deleted_on"]
         );
         return filteredChallenge;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getChallengesByRoute(routeId) {
+    try {
+      const existingChallenge = await ChallengeDAO.getChallengeByRouteFromDB(
+        routeId
+      );
+      if (!existingChallenge) {
+        return "No challenge found for this route";
+      } else {
+        for (let i = 0; i < existingChallenge.length; i++) {
+          if (existingChallenge[i].route != null) {
+            const chalResponse = await RouteService.getRouteByID(
+              existingChallenge[i].route
+            );
+            if (typeof chalResponse !== "string") {
+              existingChallenge[i].route = chalResponse;
+            }
+          }
+          const filteredChallenge = PatternUtil.filterParametersFromObject(
+            existingChallenge[i],
+            ["created_on", "deleted_on"]
+          );
+          existingChallenge[i] = filteredChallenge;
+        }
+        return existingChallenge;
       }
     } catch (e) {
       return e.message;

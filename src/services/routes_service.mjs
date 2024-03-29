@@ -17,19 +17,14 @@ export default class RouteService {
     }
   }
 
-  static async addRoute(intro_video, challenges, total_time) {
+  static async addRoute(intro_video, total_time) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
 
-      const challengeIds = challenges.map(
-        (challenge) => new ObjectId(challenge)
-      );
-
       const routeDocument = {
         intro_video: intro_video,
         total_time: total_time,
-        challenges: challengeIds,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -54,19 +49,6 @@ export default class RouteService {
       if (!existingRoute) {
         return "No route found for this ID";
       } else {
-        if (existingRoute.challenges != null) {
-          for (let i = 0; i < existingRoute.challenges.length; i++) {
-            const chalResponse = await ChallengeService.getChallengeByID(
-              existingRoute.challenges[i]
-            );
-            if (typeof chalResponse === "string") {
-              existingRoute.challenges.splice(i, 1);
-              i--;
-            } else {
-              existingRoute.challenges[i] = chalResponse;
-            }
-          }
-        }
 
         const filteredRoute = PatternUtil.filterParametersFromObject(
           existingRoute,

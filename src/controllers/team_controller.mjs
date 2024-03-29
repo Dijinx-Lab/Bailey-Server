@@ -6,10 +6,10 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class TeamController {
   static async apiCreateTeam(req, res, next) {
     try {
-      const { score, active_challenge, completed_challenges } = req.body;
+      const { name, score, active_challenge, completed_challenges } = req.body;
 
       const serviceResponse = await TeamService.addTeam(
-        score, active_challenge, completed_challenges
+        name, score, active_challenge, completed_challenges
       );
       if (typeof serviceResponse === "string") {
         res

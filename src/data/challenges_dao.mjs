@@ -38,4 +38,14 @@ export default class ChallengeDAO {
       return null;
     }
   }
+
+  static async getChallengeByRouteFromDB(route) {
+    try {
+      const challenge = await challengecon.find({ route: new ObjectId(route) }).toArray();
+      return challenge;
+    } catch (e) {
+      console.error(`Unable to get challenge by route: ${e}`);
+      return null;
+    }
+  }
 }
