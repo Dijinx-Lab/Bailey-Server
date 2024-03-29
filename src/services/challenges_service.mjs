@@ -15,17 +15,18 @@ export default class ChallengeService {
     }
   }
 
-  static async addChallenge(longitude, latitude, questions) {
+  static async addChallenge(longitude, latitude, questions, description) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
 
-      const questionIds = questions.map(question => new ObjectId(question));
+      const questionIds = questions.map((question) => new ObjectId(question));
 
       const chalDocument = {
         longitude: longitude,
         latitude: latitude,
         questions: questionIds,
+        description: description,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -46,14 +47,23 @@ export default class ChallengeService {
 
   static async getChallengeByID(chalId) {
     try {
-      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(chalId);
+      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(
+        chalId
+      );
       if (!existingChallenge) {
         return "No challenge found for this ID";
       } else {
         if (existingChallenge.questions != null) {
           for (let i = 0; i < existingChallenge.questions.length; i++) {
-            const quesResponse = await QuestionService.getQuestionByID(existingChallenge.questions[i]);
-            existingChallenge.questions[i] = quesResponse;
+            const quesResponse = await QuestionService.getQuestionByID(
+              existingChallenge.questions[i]
+            );
+            if (typeof quesResponse === "string") {
+              existingChallenge.questions.splice(i, 1);
+              i--;
+            } else {
+              existingChallenge.questions[i] = quesResponse;
+            }
           }
         }
         const filteredChallenge = PatternUtil.filterParametersFromObject(

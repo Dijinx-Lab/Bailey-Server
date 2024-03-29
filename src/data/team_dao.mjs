@@ -48,4 +48,33 @@ export default class TeamDAO {
       return null;
     }
   }
+
+  static async getAllTeamsFromDB(sortField = "score", sortOrder = -1) {
+    try {
+        let sortOptions = {};
+        sortOptions[sortField] = sortOrder;
+
+        const team = await teamcon.find().sort(sortOptions).toArray();
+        return team;
+    } catch (e) {
+        console.error(`Unable to get all teams: ${e}`);
+        return null;
+    }
+}
+
+
+  static async updateTeamInDB(team) {
+    try {
+      const updateResult = await teamcon.updateOne(
+        { _id: new ObjectId(team._id) },
+        {
+          $set: team,
+        }
+      );
+      return true;
+    } catch (e) {
+      console.error(`Unable to get team by ID: ${e}`);
+      return null;
+    }
+  }
 }

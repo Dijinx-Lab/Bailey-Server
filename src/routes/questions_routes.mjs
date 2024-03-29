@@ -20,4 +20,8 @@ router
     QuestionController.apiCreateQuestion
   );
 
+  router
+  .route(quesRoute + "/details")
+  .get(QuestionController.apiGetQuestion);
+
 export default router;

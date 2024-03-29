@@ -11,20 +11,18 @@ const teamRoutes = "/team";
 
 router
   .route(teamRoutes + "/create")
-  .post(
-    checkRequiredFieldsMiddleware([
-      "score",
-    ]),
-    TeamController.apiCreateTeam
-  );
+  .post(checkRequiredFieldsMiddleware(["score"]), TeamController.apiCreateTeam);
+
+router.route(teamRoutes + "/details").get(TeamController.apiGetTeam);
 
 router
-  .route(teamRoutes + "/details")
-  .get(TeamController.apiGetTeam);
+  .route(teamRoutes + "/details-by-code")
+  .get(TeamController.apiGetTeamByTeamCode);
 
-  
+router.route(teamRoutes + "/update").post(TeamController.apiUpdateTeam);
+
 router
-.route(teamRoutes + "/details-by-code")
-.get(TeamController.apiGetTeamByTeamCode);
+  .route(teamRoutes + "/leaderboard")
+  .get(TeamController.apiGetAllTeams);
 
 export default router;

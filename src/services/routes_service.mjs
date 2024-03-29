@@ -22,7 +22,9 @@ export default class RouteService {
       const createdOn = new Date();
       const deletedOn = null;
 
-      const challengeIds = challenges.map(challenge => new ObjectId(challenge));
+      const challengeIds = challenges.map(
+        (challenge) => new ObjectId(challenge)
+      );
 
       const routeDocument = {
         intro_video: intro_video,
@@ -35,10 +37,10 @@ export default class RouteService {
       const addedRouteId = await RouteDAO.addRouteToDB(routeDocument);
       const route = await RouteDAO.getRouteByIDFromDB(addedRouteId);
 
-      const filteredRoute = PatternUtil.filterParametersFromObject(
-        route,
-        ["created_on", "deleted_on"]
-      );
+      const filteredRoute = PatternUtil.filterParametersFromObject(route, [
+        "created_on",
+        "deleted_on",
+      ]);
 
       return { route: filteredRoute };
     } catch (e) {
@@ -54,8 +56,15 @@ export default class RouteService {
       } else {
         if (existingRoute.challenges != null) {
           for (let i = 0; i < existingRoute.challenges.length; i++) {
-            const chalResponse = await ChallengeService.getChallengeByID(existingRoute.challenges[i]);
-            existingRoute.challenges[i] = chalResponse;
+            const chalResponse = await ChallengeService.getChallengeByID(
+              existingRoute.challenges[i]
+            );
+            if (typeof chalResponse === "string") {
+              existingRoute.challenges.splice(i, 1);
+              i--;
+            } else {
+              existingRoute.challenges[i] = chalResponse;
+            }
           }
         }
 

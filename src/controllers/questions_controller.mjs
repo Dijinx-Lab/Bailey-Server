@@ -4,10 +4,28 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class QuestionController {
   static async apiCreateQuestion(req, res, next) {
     try {
-      const { score, type, question, picture, options, answer } = req.body;
+      const {
+        score,
+        type,
+        question,
+        picture,
+        options,
+        slider_min,
+        slider_max,
+        jumbled_word,
+        answer,
+      } = req.body;
 
       const serviceResponse = await QuestionService.addQuestion(
-        score, type, question, picture, options, answer
+        score,
+        type,
+        question,
+        picture,
+        options,
+        slider_min,
+        slider_max,
+        jumbled_word,
+        answer
       );
       if (typeof serviceResponse === "string") {
         res
@@ -18,6 +36,26 @@ export default class QuestionController {
           success: true,
           data: serviceResponse,
           message: "Question created successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiGetQuestion(req, res, next) {
+    try {
+      const _id = req.query._id;
+      const serviceResponse = await QuestionService.getQuestionByID(_id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Question details fetched successfully",
         });
       }
     } catch (e) {

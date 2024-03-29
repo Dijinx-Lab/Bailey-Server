@@ -13,16 +13,39 @@ export default class QuestionService {
     }
   }
 
-  static async addQuestion(score, type, question, picture, options, answer) {
+  static async addQuestion(
+    score,
+    type,
+    question,
+    picture,
+    options,
+    slider_min,
+    slider_max,
+    jumbled_word,
+    answer
+  ) {
     try {
+      if (
+        type !== "mcq" &&
+        type !== "picture" &&
+        type !== "slider" &&
+        type !== "binary" &&
+        type !== "wordjumble"
+      ) {
+        return "Unexpected Question Type";
+      }
+
       const createdOn = new Date();
       const deletedOn = null;
 
-      if (type == "picture"){
-        picture = null;
-        options = null;
-        answer = null;
-      }
+      [picture, options, answer, slider_min, slider_max, jumbled_word] = [
+        picture,
+        options,
+        answer,
+        slider_min,
+        slider_max,
+        jumbled_word,
+      ].map((field) => (field === undefined ? null : field));
 
       const quesDocument = {
         score: score,
@@ -30,6 +53,9 @@ export default class QuestionService {
         question: question,
         picture: picture,
         options: options,
+        slider_min: slider_min,
+        slider_max: slider_max,
+        jumbled_word: jumbled_word,
         answer: answer,
         created_on: createdOn,
         deleted_on: deletedOn,
@@ -38,10 +64,10 @@ export default class QuestionService {
       const addedQuesId = await QuestionDAO.addQuestionToDB(quesDocument);
       const ques = await QuestionDAO.getQuestionByIDFromDB(addedQuesId);
 
-      const filteredQuestion = PatternUtil.filterParametersFromObject(
-        ques,
-        ["created_on", "deleted_on"]
-      );
+      const filteredQuestion = PatternUtil.filterParametersFromObject(ques, [
+        "created_on",
+        "deleted_on",
+      ]);
 
       return { question: filteredQuestion };
     } catch (e) {
@@ -55,7 +81,6 @@ export default class QuestionService {
       if (!existingQues) {
         return "No question found for this ID";
       } else {
-
         const filteredQuestion = PatternUtil.filterParametersFromObject(
           existingQues,
           ["created_on", "deleted_on"]

@@ -5,10 +5,13 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class ChallengeController {
   static async apiCreateChallenge(req, res, next) {
     try {
-      const { longitude, latitude, questions } = req.body;
+      const { longitude, latitude, questions, description } = req.body;
 
       const serviceResponse = await ChallengeService.addChallenge(
-        longitude, latitude, questions
+        longitude,
+        latitude,
+        questions,
+        description
       );
       if (typeof serviceResponse === "string") {
         res
@@ -29,9 +32,7 @@ export default class ChallengeController {
   static async apiGetChallenge(req, res, next) {
     try {
       const _id = req.query._id;
-      const serviceResponse = await ChallengeService.getChallengeByID(
-        _id
-      );
+      const serviceResponse = await ChallengeService.getChallengeByID(_id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
