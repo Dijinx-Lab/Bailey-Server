@@ -17,7 +17,12 @@ export default class RouteService {
     }
   }
 
-  static async addRoute(intro_video, total_time, finish_line_lat, finish_line_long) {
+  static async addRoute(
+    intro_video,
+    total_time,
+    finish_line_lat,
+    finish_line_long
+  ) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
@@ -51,7 +56,6 @@ export default class RouteService {
       if (!existingRoute) {
         return "No route found for this ID";
       } else {
-
         const filteredRoute = PatternUtil.filterParametersFromObject(
           existingRoute,
           ["created_on", "deleted_on"]
@@ -59,6 +63,40 @@ export default class RouteService {
 
         return filteredRoute;
       }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllChallengesAndRoute() {
+    try {
+      // Get routes and challenges concurrently
+      const [existingRoute, existingChallenge] = await Promise.all([
+        RouteDAO.getAllRoutesFromDB(),
+        ChallengeDAO.getAllChallengesFromDB(),
+      ]);
+
+      // Create a map of route IDs to their corresponding challenges
+      const routeChallengesMap = {};
+      existingChallenge.forEach((challenge) => {
+        if (!routeChallengesMap[challenge.route]) {
+          routeChallengesMap[challenge.route] = [];
+        }
+        routeChallengesMap[challenge.route].push(challenge);
+      });
+
+      // Filter out unwanted parameters for each route
+      const filteredRoutes = existingRoute.map((route) => {
+        const filteredRoute = PatternUtil.filterParametersFromObject(route, [
+          "created_on",
+          "deleted_on",
+        ]);
+        // Attach challenges to their respective routes
+        filteredRoute.challenges = routeChallengesMap[route._id] || [];
+        return filteredRoute;
+      });
+
+      return { routes: filteredRoutes };
     } catch (e) {
       return e.message;
     }

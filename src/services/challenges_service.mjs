@@ -109,37 +109,5 @@ export default class ChallengeService {
     }
   }
 
-  static async getAllChallengesAndRoute() {
-    try {
-      //route
-      const existingRoute = await RouteDAO.getAllRoutesFromDB();
-      if (!existingRoute) {
-        return "No routes found";
-      } else {
-        for (let i = 0; i < existingRoute.length; i++) {
-          const filteredRoute = PatternUtil.filterParametersFromObject(
-            existingRoute[i],
-            ["created_on", "deleted_on"]
-          );
-          existingRoute[i] = filteredRoute;
-        }
-      }
-      //challenge
-      const existingChallenge = await ChallengeDAO.getAllChallengesFromDB();
-      if (!existingChallenge) {
-        return "No challenges found";
-      } else {
-        for (let i = 0; i < existingChallenge.length; i++) {
-          const filteredChallenge = PatternUtil.filterParametersFromObject(
-            existingChallenge[i],
-            ["created_on", "deleted_on"]
-          );
-          existingChallenge[i] = filteredChallenge;
-        }
-      }
-      return { route: existingRoute, challenge: existingChallenge };
-    } catch (e) {
-      return e.message;
-    }
-  }
+  
 }

@@ -6,10 +6,14 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class RouteController {
   static async apiCreateRoute(req, res, next) {
     try {
-      const { intro_video, total_time, finish_line_lat, finish_line_long } = req.body;
+      const { intro_video, total_time, finish_line_lat, finish_line_long } =
+        req.body;
 
       const serviceResponse = await RouteService.addRoute(
-        intro_video, total_time, finish_line_lat, finish_line_long
+        intro_video,
+        total_time,
+        finish_line_lat,
+        finish_line_long
       );
       if (typeof serviceResponse === "string") {
         res
@@ -30,9 +34,7 @@ export default class RouteController {
   static async apiGetRoute(req, res, next) {
     try {
       const _id = req.query._id;
-      const serviceResponse = await RouteService.getRouteByID(
-        _id
-      );
+      const serviceResponse = await RouteService.getRouteByID(_id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -42,6 +44,25 @@ export default class RouteController {
           success: true,
           data: serviceResponse,
           message: "Route details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiGetAllRoutes(req, res, next) {
+    try {
+      const serviceResponse = await RouteService.getAllChallengesAndRoute();
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Challenge and Route details fetched successfully",
         });
       }
     } catch (e) {

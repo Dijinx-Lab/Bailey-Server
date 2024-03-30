@@ -18,4 +18,6 @@ router
 
 router.route(routes + "/details").get(RouteController.apiGetRoute);
 
+router.route(routes + "/all-details").get(RouteController.apiGetAllRoutes);
+
 export default router;

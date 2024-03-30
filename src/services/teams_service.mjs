@@ -65,28 +65,6 @@ export default class TeamService {
       if (!existingTeam) {
         return "No team found for this ID";
       } else {
-        if (existingTeam.active_challenge != null) {
-          const chalResponse = await ChallengeService.getChallengeByID(
-            existingTeam.active_challenge
-          );
-          if (typeof chalResponse !== "string") {
-            existingTeam.active_challenge = chalResponse;
-          }
-        }
-
-        if (existingTeam.completed_challenges != null) {
-          for (let i = 0; i < existingTeam.completed_challenges.length; i++) {
-            const chalResponse = await ChallengeService.getChallengeByID(
-              existingTeam.completed_challenges[i]
-            );
-            if (typeof chalResponse === "string") {
-              existingTeam.completed_challenges.splice(i, 1);
-              i--;
-            } else {
-              existingTeam.completed_challenges[i] = chalResponse;
-            }
-          }
-        }
         const filteredTeam = PatternUtil.filterParametersFromObject(
           existingTeam,
           ["created_on", "deleted_on"]
@@ -104,23 +82,6 @@ export default class TeamService {
       if (!existingTeam) {
         return "No team found for this Team Code";
       } else {
-        if (existingTeam.active_challenge != null) {
-          const chalResponse = await ChallengeService.getChallengeByID(
-            existingTeam.active_challenge
-          );
-          if (typeof chalResponse !== "string") {
-            existingTeam.active_challenge = chalResponse;
-          }
-        }
-
-        if (existingTeam.completed_challenges != null) {
-          for (let i = 0; i < existingTeam.completed_challenges.length; i++) {
-            const chalResponse = await ChallengeService.getChallengeByID(
-              existingTeam.completed_challenges[i]
-            );
-            existingTeam.completed_challenges[i] = chalResponse;
-          }
-        }
         const filteredTeam = PatternUtil.filterParametersFromObject(
           existingTeam,
           ["created_on", "deleted_on"]
@@ -139,27 +100,6 @@ export default class TeamService {
         return "No teams found";
       } else {
         for (let j = 0; j < existingTeam.length; j++) {
-          if (existingTeam[j].active_challenge != null) {
-            const chalResponse = await ChallengeService.getChallengeByID(
-              existingTeam[j].active_challenge
-            );
-            if (typeof chalResponse !== "string") {
-              existingTeam[j].active_challenge = chalResponse;
-            }
-          }
-
-          if (existingTeam[j].completed_challenges != null) {
-            for (
-              let i = 0;
-              i < existingTeam[j].completed_challenges.length;
-              i++
-            ) {
-              const chalResponse = await ChallengeService.getChallengeByID(
-                existingTeam[j].completed_challenges[i]
-              );
-              existingTeam[j].completed_challenges[i] = chalResponse;
-            }
-          }
           const filteredTeam = PatternUtil.filterParametersFromObject(
             existingTeam[j],
             ["created_on", "deleted_on"]
@@ -241,7 +181,8 @@ export default class TeamService {
         return "No team found for this team code";
       }
 
-      existingTeam.completed_challenges = existingTeam.completed_challenges || [];
+      existingTeam.completed_challenges =
+        existingTeam.completed_challenges || [];
       existingTeam.completed_challenges.push(challenge_id);
 
       const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
