@@ -11,7 +11,7 @@ const teamRoutes = "/team";
 
 router
   .route(teamRoutes + "/create")
-  .post(checkRequiredFieldsMiddleware(["score"]), TeamController.apiCreateTeam);
+  .post(checkRequiredFieldsMiddleware(["name"]), TeamController.apiCreateTeam);
 
 router.route(teamRoutes + "/details").get(TeamController.apiGetTeam);
 
@@ -21,8 +21,6 @@ router
 
 router.route(teamRoutes + "/update").post(TeamController.apiUpdateTeam);
 
-router
-  .route(teamRoutes + "/leaderboard")
-  .get(TeamController.apiGetAllTeams);
+router.route(teamRoutes + "/leaderboard").get(TeamController.apiGetAllTeams);
 
 export default router;

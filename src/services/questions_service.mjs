@@ -110,20 +110,22 @@ export default class QuestionService {
 
   static async getQuestionsByChallenge(chalId) {
     try {
-      const existingQues = await QuestionDAO.getQuestionsByChallengeFromDB(chalId);
+      const existingQues = await QuestionDAO.getQuestionsByChallengeFromDB(
+        chalId
+      );
       if (!existingQues) {
         return "No question found for this challenge";
       } else {
-        for (let i = 0; i < existingQues.length; i++){
-          if (existingQues[i].challenge != null) {
-            const chalResponse = await ChallengeService.getChallengeByID(
-              existingQues[i].challenge
-            );
-            if (typeof chalResponse !== "string") {
-              existingQues[i].challenge = chalResponse;
-            }
-          }
-  
+        for (let i = 0; i < existingQues.length; i++) {
+          // if (existingQues[i].challenge != null) {
+          //   const chalResponse = await ChallengeService.getChallengeByID(
+          //     existingQues[i].challenge
+          //   );
+          //   if (typeof chalResponse !== "string") {
+          //     existingQues[i].challenge = chalResponse;
+          //   }
+          // }
+
           const filteredQuestion = PatternUtil.filterParametersFromObject(
             existingQues[i],
             ["created_on", "deleted_on"]

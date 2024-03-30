@@ -17,15 +17,10 @@ export default class TeamService {
     }
   }
 
-  static async addTeam(name, score, active_challenge, completed_challenges) {
+  static async addTeam(name) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
-
-      const object_active_challenge = new ObjectId(active_challenge);
-      const object_completed_challenges = completed_challenges.map(
-        (completed_challenge) => new ObjectId(completed_challenge)
-      );
 
       let team_code;
 
@@ -43,9 +38,9 @@ export default class TeamService {
       const teamDocument = {
         name: name,
         team_code: team_code,
-        score: score,
-        active_challenge: object_active_challenge,
-        completed_challenges: object_completed_challenges,
+        score: 0,
+        active_challenge: null,
+        completed_challenges: [],
         created_on: createdOn,
         deleted_on: deletedOn,
       };
