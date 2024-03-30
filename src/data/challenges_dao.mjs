@@ -48,4 +48,14 @@ export default class ChallengeDAO {
       return null;
     }
   }
+
+  static async getAllChallengesFromDB() {
+    try {
+      const challenge = await challengecon.find().toArray();
+      return challenge;
+    } catch (e) {
+      console.error(`Unable to get all challenges: ${e}`);
+      return null;
+    }
+  }
 }

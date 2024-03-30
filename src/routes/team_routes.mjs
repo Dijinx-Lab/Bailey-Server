@@ -23,4 +23,8 @@ router.route(teamRoutes + "/update").post(TeamController.apiUpdateTeam);
 
 router.route(teamRoutes + "/leaderboard").get(TeamController.apiGetAllTeams);
 
+router.route(teamRoutes + "/toggle").post(TeamController.apiToggleActiveChallenge);
+
+router.route(teamRoutes + "/mark-complete").post(TeamController.apiUpdateCompletedChallenges);
+
 export default router;

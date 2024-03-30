@@ -195,7 +195,7 @@ export default class TeamService {
         existingTeam.active_challenge = active_challenge;
       }
 
-      if (score) {
+      if (completed_challenges) {
         existingTeam.completed_challenges = completed_challenges;
       }
 
@@ -204,7 +204,52 @@ export default class TeamService {
       if (updateResult) {
         return {};
       } else {
-        return "Failed to update the password";
+        return "Failed to update the team";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async toggleActiveChallenge(team_code, active_challenge) {
+    try {
+      const existingTeam = await TeamDAO.getTeamByTeamCode(team_code);
+      if (!existingTeam) {
+        return "No team found for this team code";
+      }
+
+      existingTeam.active_challenge = existingTeam.active_challenge
+        ? null
+        : active_challenge;
+
+      const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the active challenge";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async updateCompletedChallenges(team_code, challenge_id) {
+    try {
+      const existingTeam = await TeamDAO.getTeamByTeamCode(team_code);
+      if (!existingTeam) {
+        return "No team found for this team code";
+      }
+
+      existingTeam.completed_challenges = existingTeam.completed_challenges || [];
+      existingTeam.completed_challenges.push(challenge_id);
+
+      const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the team";
       }
     } catch (e) {
       return e.message;

@@ -20,4 +20,6 @@ router.route(chalRoute + "/details").get(ChallengeController.apiGetChallenge);
 
 router.route(chalRoute + "/details-by-route").get(ChallengeController.apiGetChallengesByRoute);
 
+router.route(chalRoute + "/all-details").get(ChallengeController.apiGetAllChallengesAndRoutes);
+
 export default router;

@@ -17,7 +17,7 @@ export default class RouteService {
     }
   }
 
-  static async addRoute(intro_video, total_time) {
+  static async addRoute(intro_video, total_time, finish_line_lat, finish_line_long) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
@@ -25,6 +25,8 @@ export default class RouteService {
       const routeDocument = {
         intro_video: intro_video,
         total_time: total_time,
+        finish_line_lat: finish_line_lat,
+        finish_line_long: finish_line_long,
         created_on: createdOn,
         deleted_on: deletedOn,
       };

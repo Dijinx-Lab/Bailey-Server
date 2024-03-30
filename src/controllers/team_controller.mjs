@@ -8,9 +8,7 @@ export default class TeamController {
     try {
       const { name } = req.body;
 
-      const serviceResponse = await TeamService.addTeam(
-        name
-      );
+      const serviceResponse = await TeamService.addTeam(name);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -30,9 +28,7 @@ export default class TeamController {
   static async apiGetTeam(req, res, next) {
     try {
       const _id = req.query._id;
-      const serviceResponse = await TeamService.getTeamByID(
-        _id
-      );
+      const serviceResponse = await TeamService.getTeamByID(_id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -52,9 +48,7 @@ export default class TeamController {
   static async apiGetTeamByTeamCode(req, res, next) {
     try {
       const team_code = req.query.team_code;
-      const serviceResponse = await TeamService.getTeamByTeamCode(
-        team_code
-      );
+      const serviceResponse = await TeamService.getTeamByTeamCode(team_code);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -96,7 +90,60 @@ export default class TeamController {
       const { score, active_challenge, completed_challenges } = req.body;
 
       const serviceResponse = await TeamService.updateTeamDetails(
-        team_code, score, active_challenge, completed_challenges
+        team_code,
+        score,
+        active_challenge,
+        completed_challenges
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team updated successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiToggleActiveChallenge(req, res, next) {
+    try {
+      const team_code = req.query.team_code;
+      const challenge_id = req.query.challenge_id || null;
+
+      const serviceResponse = await TeamService.toggleActiveChallenge(
+        team_code,
+        challenge_id
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team updated successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiUpdateCompletedChallenges(req, res, next) {
+    try {
+      const team_code = req.query.team_code;
+      const challenge_id = req.query.challenge_id;
+
+      const serviceResponse = await TeamService.updateCompletedChallenges(
+        team_code,
+        challenge_id
       );
       if (typeof serviceResponse === "string") {
         res

@@ -38,4 +38,14 @@ export default class RouteDAO {
       return null;
     }
   }
+
+  static async getAllRoutesFromDB() {
+    try {
+      const route = await routescon.find().toArray();
+      return route;
+    } catch (e) {
+      console.error(`Unable to get all routes: ${e}`);
+      return null;
+    }
+  }
 }
