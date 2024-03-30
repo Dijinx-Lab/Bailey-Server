@@ -181,9 +181,14 @@ export default class TeamService {
         return "No team found for this team code";
       }
 
+      if (challenge_id !== existingTeam.active_challenge) {
+        return "Not an active challenge";
+      }
+
       existingTeam.completed_challenges =
         existingTeam.completed_challenges || [];
       existingTeam.completed_challenges.push(challenge_id);
+      existingTeam.active_challenge = null;
 
       const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
 
