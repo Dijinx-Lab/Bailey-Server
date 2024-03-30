@@ -174,20 +174,29 @@ export default class TeamService {
     }
   }
 
-  static async updateCompletedChallenges(team_code, challenge_id) {
+  static async updateCompletedChallenges(team_code) {
     try {
       const existingTeam = await TeamDAO.getTeamByTeamCode(team_code);
       if (!existingTeam) {
         return "No team found for this team code";
       }
 
-      if (challenge_id !== existingTeam.active_challenge) {
-        return "Not an active challenge";
+      // if (challenge_id !== existingTeam.active_challenge) {
+      //   return "Not an active challenge";
+      // }
+
+      // existingTeam.completed_challenges =
+      //   existingTeam.completed_challenges || [];
+      // existingTeam.completed_challenges.push(challenge_id);
+      // existingTeam.active_challenge = null;
+
+      if (existingTeam.active_challenge == null) {
+        return "No active challenge";
       }
 
       existingTeam.completed_challenges =
         existingTeam.completed_challenges || [];
-      existingTeam.completed_challenges.push(challenge_id);
+      existingTeam.completed_challenges.push(existingTeam.active_challenge);
       existingTeam.active_challenge = null;
 
       const updateResult = await TeamDAO.updateTeamInDB(existingTeam);

@@ -139,11 +139,9 @@ export default class TeamController {
   static async apiUpdateCompletedChallenges(req, res, next) {
     try {
       const team_code = req.query.team_code;
-      const challenge_id = req.query.challenge_id;
 
       const serviceResponse = await TeamService.updateCompletedChallenges(
-        team_code,
-        challenge_id
+        team_code
       );
       if (typeof serviceResponse === "string") {
         res
