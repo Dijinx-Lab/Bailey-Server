@@ -218,8 +218,8 @@ export default class RouteService {
       }
 
       existingRoute.end_time = new Date();
-      existingRoute.total_time =
-        (existingRoute.end_time - existingRoute.start_time) / 1000;
+      existingRoute.time_taken =
+        (existingRoute.end_time - existingRoute.start_time) / (1000 * 60);
 
       let completed_challenges_no = 0;
 
