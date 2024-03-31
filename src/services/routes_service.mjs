@@ -27,12 +27,16 @@ export default class RouteService {
     try {
       const createdOn = new Date();
       const deletedOn = null;
+      const start_time = null;
+      const end_time = null;
 
       const routeDocument = {
         intro_video: intro_video,
         total_time: total_time,
         finish_line_lat: finish_line_lat,
         finish_line_long: finish_line_long,
+        start_time: start_time,
+        end_time: end_time,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -167,6 +171,27 @@ export default class RouteService {
         });
 
         return { routes: filteredRoutes };
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async setStartTime(routeId) {
+    try {
+      const existingRoute = await RouteDAO.getRouteByIDFromDB(routeId);
+      if (!existingRoute) {
+        return "No route found for this ID";
+      }
+
+      existingRoute.start_time = new Date();
+
+      const updateResult = await RouteDAO.updateRouteInDB(existingRoute);
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the route";
       }
     } catch (e) {
       return e.message;
