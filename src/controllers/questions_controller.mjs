@@ -67,8 +67,10 @@ export default class QuestionController {
 
   static async apiGetQuestionsByChallenge(req, res, next) {
     try {
-      const challenge_id = req.query.challenge_id;
-      const serviceResponse = await QuestionService.getQuestionsByChallenge(challenge_id);
+      const challenge_id = req.query.id;
+      const serviceResponse = await QuestionService.getQuestionsByChallenge(
+        challenge_id
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)

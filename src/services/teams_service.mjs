@@ -108,7 +108,7 @@ export default class TeamService {
           existingTeam[j] = filteredTeam;
         }
 
-        return existingTeam;
+        return { teams: existingTeam };
       }
     } catch (e) {
       return e.message;
