@@ -188,12 +188,15 @@ export default class TeamService {
       existingTeam.completed_challenges =
         existingTeam.completed_challenges || [];
       existingTeam.completed_challenges.push(existingTeam.active_challenge);
+
+      const summaryResponse = await ChallengeService.getChallengeSummary(existingTeam.active_challenge, team_code)
+
       existingTeam.active_challenge = null;
 
       const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
 
       if (updateResult) {
-        return {};
+        return summaryResponse;
       } else {
         return "Failed to update the team";
       }

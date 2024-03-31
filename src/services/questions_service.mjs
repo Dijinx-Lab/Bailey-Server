@@ -5,6 +5,7 @@ import PatternUtil from "../utility/pattern_util.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 import TokenService from "./token_service.mjs";
 import ChallengeService from "./challenges_service.mjs";
+import AnswerDAO from "../data/answers_dao.mjs";
 
 export default class QuestionService {
   static async connectDatabase(client) {
@@ -110,24 +111,17 @@ export default class QuestionService {
     }
   }
 
-  static async getQuestionsByChallenge(chalId) {
+  static async getQuestionsByChallenge(chalId, team_code) {
     try {
-      const existingQues = await QuestionDAO.getQuestionsByChallengeFromDB(
-        chalId
-      );
+      const [existingQues, existingAnswer] = await Promise.all([
+        QuestionDAO.getQuestionsByChallengeFromDB(chalId),
+        AnswerDAO.getAnswerByTeamCode(team_code),
+      ]);
+
       if (!existingQues) {
         return "No question found for this challenge";
       } else {
         for (let i = 0; i < existingQues.length; i++) {
-          // if (existingQues[i].challenge != null) {
-          //   const chalResponse = await ChallengeService.getChallengeByID(
-          //     existingQues[i].challenge
-          //   );
-          //   if (typeof chalResponse !== "string") {
-          //     existingQues[i].challenge = chalResponse;
-          //   }
-          // }
-
           const filteredQuestion = PatternUtil.filterParametersFromObject(
             existingQues[i],
             ["created_on", "deleted_on"]
@@ -136,7 +130,15 @@ export default class QuestionService {
           existingQues[i] = filteredQuestion;
         }
 
-        return { questions: existingQues };
+        const existingAnswerIds = existingAnswer.map((answer) =>
+          answer.question.toString()
+        );
+
+        const filteredExistingQues = existingQues.filter((ques) =>
+          !existingAnswerIds.includes(ques._id.toString())
+        );
+
+        return { questions: filteredExistingQues };
       }
     } catch (e) {
       return e.message;

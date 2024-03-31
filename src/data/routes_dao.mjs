@@ -48,4 +48,19 @@ export default class RouteDAO {
       return null;
     }
   }
+
+  static async updateRouteInDB(route) {
+    try {
+      const updateResult = await routescon.updateOne(
+        { _id: new ObjectId(route._id) },
+        {
+          $set: route,
+        }
+      );
+      return true;
+    } catch (e) {
+      console.error(`Unable to get route by ID: ${e}`);
+      return null;
+    }
+  }
 }

@@ -3,6 +3,8 @@ import { ObjectId } from "mongodb";
 import PatternUtil from "../utility/pattern_util.mjs";
 import RouteService from "./routes_service.mjs";
 import RouteDAO from "../data/routes_dao.mjs";
+import QuestionDAO from "../data/questions_dao.mjs";
+import AnswerDAO from "../data/answers_dao.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {
@@ -196,6 +198,53 @@ export default class ChallengeService {
       } else {
         return "Failed to update the challenge";
       }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getChallengeSummary(chalId, team_code) {
+    try {
+      const [existingChallenge, existingAnswer] = await Promise.all([
+        ChallengeDAO.getChallengeByIDFromDB(chalId),
+        AnswerDAO.getAnswerByTeamCode(team_code),
+      ]);
+
+      if (!existingChallenge) {
+        return "No challenge found for this id";
+      }
+
+      if (!existingAnswer) {
+        return "No answer found for this team code";
+      }
+
+      let total_score = 0;
+
+      for (let i = 0; i < existingAnswer.length; i++) {
+        const existingQues = await QuestionDAO.getQuestionByIDFromDB(
+          existingAnswer[i].question
+        );
+        existingAnswer[i].question = existingQues.question;
+        existingAnswer[i].challengeId = existingQues.challenge;
+
+        total_score += existingAnswer[i].score;
+      }
+
+      const challengeId = existingChallenge._id.toString();
+
+      const challengeAnswers = existingAnswer.filter(
+        (answer) => answer.challengeId.toString() === challengeId
+      );
+
+      const filteredChallenge = PatternUtil.filterParametersFromObject(
+        existingChallenge,
+        ["created_on", "deleted_on"]
+      );
+
+      filteredChallenge.total_score = total_score;
+      filteredChallenge.answers = challengeAnswers;
+
+      return filteredChallenge; 
     } catch (e) {
       return e.message;
     }

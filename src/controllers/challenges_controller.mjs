@@ -33,7 +33,7 @@ export default class ChallengeController {
 
   static async apiGetChallenge(req, res, next) {
     try {
-      const _id = req.query._id;
+      const _id = req.query.id;
       const serviceResponse = await ChallengeService.getChallengeByID(_id);
       if (typeof serviceResponse === "string") {
         res
@@ -71,5 +71,24 @@ export default class ChallengeController {
     }
   }
 
-  
+  static async apiGetChallengeSummary(req, res, next) {
+    try {
+      const _id = req.query.id;
+      const team_code = req.query.code;
+      const serviceResponse = await ChallengeService.getChallengeSummary(_id, team_code);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Challenge details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }  
 }

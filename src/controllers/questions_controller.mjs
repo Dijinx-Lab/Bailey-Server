@@ -68,8 +68,10 @@ export default class QuestionController {
   static async apiGetQuestionsByChallenge(req, res, next) {
     try {
       const challenge_id = req.query.id;
+      const team_code = req.query.code;
       const serviceResponse = await QuestionService.getQuestionsByChallenge(
-        challenge_id
+        challenge_id,
+        team_code
       );
       if (typeof serviceResponse === "string") {
         res

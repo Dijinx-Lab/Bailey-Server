@@ -33,7 +33,7 @@ export default class RouteController {
 
   static async apiGetRoute(req, res, next) {
     try {
-      const _id = req.query._id;
+      const _id = req.query.id;
       const serviceResponse = await RouteService.getRouteByID(_id);
       if (typeof serviceResponse === "string") {
         res
@@ -65,6 +65,26 @@ export default class RouteController {
           success: true,
           data: serviceResponse,
           message: "Challenge and Route details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiSetStartTime(req, res, next) {
+    try {
+      const id = req.query.id;
+      const serviceResponse = await RouteService.setStartTime(id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Route details updated successfully",
         });
       }
     } catch (e) {
