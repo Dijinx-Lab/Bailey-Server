@@ -47,8 +47,8 @@ export default class TeamController {
 
   static async apiGetTeamByTeamCode(req, res, next) {
     try {
-      const team_code = req.query.team_code;
-      const serviceResponse = await TeamService.getTeamByTeamCode(team_code);
+      const code = req.query.code;
+      const serviceResponse = await TeamService.getTeamByTeamCode(code);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -113,8 +113,8 @@ export default class TeamController {
 
   static async apiToggleActiveChallenge(req, res, next) {
     try {
-      const team_code = req.query.team_code;
-      const challenge_id = req.query.challenge_id || null;
+      const team_code = req.query.code;
+      const challenge_id = req.query.id || null;
 
       const serviceResponse = await TeamService.toggleActiveChallenge(
         team_code,
@@ -138,7 +138,7 @@ export default class TeamController {
 
   static async apiUpdateCompletedChallenges(req, res, next) {
     try {
-      const team_code = req.query.team_code;
+      const team_code = req.query.code;
 
       const serviceResponse = await TeamService.updateCompletedChallenges(
         team_code

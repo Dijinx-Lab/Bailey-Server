@@ -53,7 +53,9 @@ export default class RouteController {
 
   static async apiGetAllRoutes(req, res, next) {
     try {
-      const serviceResponse = await RouteService.getAllChallengesAndRoute();
+      const code = req.query.code;
+
+      const serviceResponse = await RouteService.getAllChallengesAndRoute(code);
       if (typeof serviceResponse === "string") {
         res
           .status(200)

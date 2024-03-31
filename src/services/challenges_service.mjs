@@ -32,6 +32,8 @@ export default class ChallengeService {
         difficulty: difficulty,
         longitude: longitude,
         latitude: latitude,
+        questions: 0,
+        total_score: 0,
         route: new_route_id,
         description: description,
         created_on: createdOn,
@@ -108,6 +110,4 @@ export default class ChallengeService {
       return e.message;
     }
   }
-
-  
 }

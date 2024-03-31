@@ -86,7 +86,7 @@ export default class TeamService {
           existingTeam,
           ["created_on", "deleted_on"]
         );
-        return filteredTeam;
+        return { team: filteredTeam };
       }
     } catch (e) {
       return e.message;
@@ -180,15 +180,6 @@ export default class TeamService {
       if (!existingTeam) {
         return "No team found for this team code";
       }
-
-      // if (challenge_id !== existingTeam.active_challenge) {
-      //   return "Not an active challenge";
-      // }
-
-      // existingTeam.completed_challenges =
-      //   existingTeam.completed_challenges || [];
-      // existingTeam.completed_challenges.push(challenge_id);
-      // existingTeam.active_challenge = null;
 
       if (existingTeam.active_challenge == null) {
         return "No active challenge";

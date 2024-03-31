@@ -134,7 +134,7 @@ export default class QuestionService {
           existingQues[i] = filteredQuestion;
         }
 
-        return existingQues;
+        return { questions: existingQues };
       }
     } catch (e) {
       return e.message;
