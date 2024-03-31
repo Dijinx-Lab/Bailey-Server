@@ -91,4 +91,25 @@ export default class RouteController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiMarkRouteComplete(req, res, next) {
+    try {
+      const id = req.query.id;
+      const team_code = req.query.code;
+      const serviceResponse = await RouteService.markRouteComplete(id, team_code);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Route details updated successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
 }

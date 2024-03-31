@@ -39,6 +39,16 @@ export default class AnswerDAO {
     }
   }
 
+  static async getAnswerByQuestionFromDB(id) {
+    try {
+      const answer = await answercon.findOne({ question: new ObjectId(id) });
+      return answer;
+    } catch (e) {
+      console.error(`Unable to get answer by ID: ${e}`);
+      return null;
+    }
+  }
+
   static async getAnswerByTeamCode(team_code) {
     try {
       const answer = await answercon.find({ team_code: team_code }).toArray();

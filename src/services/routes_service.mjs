@@ -8,6 +8,8 @@ import QuestionService from "./questions_service.mjs";
 import RouteDAO from "../data/routes_dao.mjs";
 import ChallengeService from "./challenges_service.mjs";
 import TeamDAO from "../data/team_dao.mjs";
+import QuestionDAO from "../data/questions_dao.mjs";
+import AnswerDAO from "../data/answers_dao.mjs";
 
 export default class RouteService {
   static async connectDatabase(client) {
@@ -193,6 +195,84 @@ export default class RouteService {
       } else {
         return "Failed to update the route";
       }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async markRouteComplete(routeId, team_code) {
+    try {
+      const [existingRoute, existingChallenge, existingTeam] =
+        await Promise.all([
+          RouteDAO.getRouteByIDFromDB(routeId),
+          ChallengeDAO.getChallengeByRouteFromDB(routeId),
+          TeamDAO.getTeamByTeamCode(team_code),
+        ]);
+
+      if (!existingRoute) {
+        return "No route found for this ID";
+      }
+
+      if (!existingChallenge) {
+        return "No challenges found for this route";
+      }
+
+      existingRoute.end_time = new Date();
+      existingRoute.total_time =
+        (existingRoute.end_time - existingRoute.start_time) / 1000;
+
+      let completed_challenges_no = 0;
+
+      for (const challenge of existingChallenge) {
+        for (const challengeId of existingTeam.completed_challenges) {
+          if (challenge._id.toString() === challengeId.toString()) {
+            completed_challenges_no++;
+            break;
+          }
+        }
+      }
+
+      existingRoute.completed_challenges = completed_challenges_no;
+      existingRoute.total_challenges = existingChallenge.length;
+
+      let completed_questions_no = 0;
+      let total_questions_no = 0;
+      let total_score = 0;
+
+      const questionPromises = existingChallenge.map((challenge) =>
+        QuestionDAO.getQuestionsByChallengeFromDB(challenge._id)
+      );
+
+      const questionsByChallenge = await Promise.all(questionPromises);
+      const allQuestions = questionsByChallenge.flat();
+      total_questions_no += allQuestions.length;
+
+      const answeredQuestionPromises = allQuestions.map((question) =>
+        AnswerDAO.getAnswerByQuestionFromDB(question._id)
+      );
+
+      const answeredQuestions = await Promise.all(answeredQuestionPromises);
+
+      completed_questions_no = answeredQuestions.filter((answer) => {
+        if (answer) {
+          completed_questions_no++;
+          total_score += answer.score;
+
+          return true;
+        }
+        return false;
+      }).length;
+
+      existingRoute.total_questions = total_questions_no;
+      existingRoute.answered_questions = completed_questions_no;
+      existingRoute.total_score = total_score;
+
+      const filteredRoute = PatternUtil.filterParametersFromObject(
+        existingRoute,
+        ["created_on", "deleted_on"]
+      );
+
+      return filteredRoute;
     } catch (e) {
       return e.message;
     }

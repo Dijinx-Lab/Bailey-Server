@@ -22,4 +22,6 @@ router.route(routes + "/all-details").get(RouteController.apiGetAllRoutes);
 
 router.route(routes + "/set-start-time").post(RouteController.apiSetStartTime);
 
+router.route(routes + "/mark-complete").post(RouteController.apiMarkRouteComplete);
+
 export default router;
