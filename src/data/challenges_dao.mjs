@@ -58,4 +58,19 @@ export default class ChallengeDAO {
       return null;
     }
   }
+
+  static async updateChallengeInDB(challenge) {
+    try {
+      const updateResult = await challengecon.updateOne(
+        { _id: new ObjectId(challenge._id) },
+        {
+          $set: challenge,
+        }
+      );
+      return true;
+    } catch (e) {
+      console.error(`Unable to get challenge by ID: ${e}`);
+      return null;
+    }
+  }
 }

@@ -110,4 +110,94 @@ export default class ChallengeService {
       return e.message;
     }
   }
+
+  static async updateChallenges(
+    id,
+    name,
+    difficulty,
+    longitude,
+    latitude,
+    questions,
+    total_score,
+    route,
+    description
+  ) {
+    try {
+      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
+      if (!existingChallenge) {
+        return "No challenge found for this id";
+      }
+
+      if (name) {
+        existingChallenge.name = name;
+      }
+
+      if (difficulty) {
+        existingChallenge.difficulty = difficulty;
+      }
+
+      if (longitude) {
+        existingChallenge.longitude = longitude;
+      }
+
+      if (latitude) {
+        existingChallenge.latitude = latitude;
+      }
+
+      if (questions) {
+        existingChallenge.questions = questions;
+      }
+
+      if (total_score) {
+        existingChallenge.total_score = total_score;
+      }
+
+      if (route) {
+        existingChallenge.route = route;
+      }
+
+      if (description) {
+        existingChallenge.description = description;
+      }
+
+      const updateResult = await ChallengeDAO.updateChallengeInDB(
+        existingChallenge
+      );
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the challenge";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async updateChallengeStats(id, total_score) {
+    try {
+      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
+      if (!existingChallenge) {
+        return "No challenge found for this id";
+      }
+
+      existingChallenge.questions += 1;
+
+      if (total_score) {
+        existingChallenge.total_score += total_score;
+      }
+
+      const updateResult = await ChallengeDAO.updateChallengeInDB(
+        existingChallenge
+      );
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the challenge";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
 }

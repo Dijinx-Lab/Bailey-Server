@@ -52,6 +52,8 @@ export default class QuestionService {
         jumbled_word,
       ].map((field) => (field === undefined ? null : field));
 
+      await ChallengeService.updateChallengeStats(challenge, score);
+
       const quesDocument = {
         score: score,
         type: type,
