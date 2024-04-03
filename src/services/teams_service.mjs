@@ -7,6 +7,7 @@ import TokenService from "./token_service.mjs";
 import QuestionService from "./questions_service.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import ChallengeService from "./challenges_service.mjs";
+import FirebaseUtility from "../utility/fcm_utility.mjs";
 
 export default class TeamService {
   static async connectDatabase(client) {
@@ -41,6 +42,7 @@ export default class TeamService {
         score: 0,
         active_challenge: null,
         completed_challenges: [],
+        fcm_token: null,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -49,6 +51,7 @@ export default class TeamService {
       const team = await TeamDAO.getTeamByIDFromDB(addTeamId);
 
       const filteredTeam = PatternUtil.filterParametersFromObject(team, [
+        "fcm_token",
         "created_on",
         "deleted_on",
       ]);
@@ -117,6 +120,7 @@ export default class TeamService {
 
   static async updateTeamDetails(
     team_code,
+    fcm_token,
     score,
     active_challenge,
     completed_challenges
@@ -125,6 +129,10 @@ export default class TeamService {
       const existingTeam = await TeamDAO.getTeamByTeamCode(team_code);
       if (!existingTeam) {
         return "No team found for this team code";
+      }
+
+      if (fcm_token) {
+        existingTeam.fcm_token = fcm_token;
       }
 
       if (score) {
@@ -189,7 +197,10 @@ export default class TeamService {
         existingTeam.completed_challenges || [];
       existingTeam.completed_challenges.push(existingTeam.active_challenge);
 
-      const summaryResponse = await ChallengeService.getChallengeSummary(existingTeam.active_challenge, team_code)
+      const summaryResponse = await ChallengeService.getChallengeSummary(
+        existingTeam.active_challenge,
+        team_code
+      );
 
       existingTeam.active_challenge = null;
 

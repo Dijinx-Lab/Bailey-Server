@@ -4,6 +4,8 @@ import TeamService from "../services/teams_service.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 
 export default class TeamController {
+  
+
   static async apiCreateTeam(req, res, next) {
     try {
       const { name } = req.body;
@@ -86,11 +88,13 @@ export default class TeamController {
 
   static async apiUpdateTeam(req, res, next) {
     try {
-      const team_code = req.query.team_code;
-      const { score, active_challenge, completed_challenges } = req.body;
+      const team_code = req.query.code;
+      const { score, active_challenge, completed_challenges, fcm_token } =
+        req.body;
 
       const serviceResponse = await TeamService.updateTeamDetails(
         team_code,
+        fcm_token,
         score,
         active_challenge,
         completed_challenges

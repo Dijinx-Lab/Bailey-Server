@@ -242,9 +242,9 @@ export default class ChallengeService {
       );
 
       filteredChallenge.total_score = total_score;
-      filteredChallenge.answers = challengeAnswers;
+      // filteredChallenge.answers = challengeAnswers;
 
-      return filteredChallenge; 
+      return { challenge: filteredChallenge, answers: challengeAnswers };
     } catch (e) {
       return e.message;
     }

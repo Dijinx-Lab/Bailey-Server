@@ -75,7 +75,8 @@ export default class RouteController {
   static async apiSetStartTime(req, res, next) {
     try {
       const id = req.query.id;
-      const serviceResponse = await RouteService.setStartTime(id);
+      const code = req.query.code;
+      const serviceResponse = await RouteService.startRouteForTeam(id, code);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -96,7 +97,7 @@ export default class RouteController {
     try {
       const id = req.query.id;
       const team_code = req.query.code;
-      const serviceResponse = await RouteService.markRouteComplete(id, team_code);
+      const serviceResponse = await RouteService.endRouteForTeam(id, team_code);
       if (typeof serviceResponse === "string") {
         res
           .status(200)

@@ -10,6 +10,7 @@ import ChallengeService from "./challenges_service.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
+import TimingService from "./timing_service.mjs";
 
 export default class RouteService {
   static async connectDatabase(client) {
@@ -29,7 +30,6 @@ export default class RouteService {
     try {
       const createdOn = new Date();
       const deletedOn = null;
-      const start_time = null;
       const end_time = null;
 
       const routeDocument = {
@@ -37,7 +37,6 @@ export default class RouteService {
         total_time: total_time,
         finish_line_lat: finish_line_lat,
         finish_line_long: finish_line_long,
-        start_time: start_time,
         end_time: end_time,
         created_on: createdOn,
         deleted_on: deletedOn,
@@ -78,12 +77,16 @@ export default class RouteService {
   static async getAllChallengesAndRoute(code) {
     try {
       if (code) {
-        let [existingRoute, existingChallenge, existingTeam] =
-          await Promise.all([
-            RouteDAO.getAllRoutesFromDB(),
-            ChallengeDAO.getAllChallengesFromDB(),
-            TeamDAO.getTeamByTeamCode(code),
-          ]);
+        let [routes, existingChallenge, existingTeam] = await Promise.all([
+          RouteDAO.getAllRoutesFromDB(),
+          ChallengeDAO.getAllChallengesFromDB(),
+          TeamDAO.getTeamByTeamCode(code),
+        ]);
+
+        if (!routes || routes.length === 0) {
+          return { routes: [] };
+        }
+
         if (!existingTeam) {
           return "No such team exists with this ID";
         }
@@ -97,54 +100,19 @@ export default class RouteService {
           });
         }
 
-        // Create a map of route IDs to their corresponding challenges
-        const routeChallengesMap = {};
-        existingChallenge.forEach((challenge) => {
-          if (!routeChallengesMap[challenge.route]) {
-            routeChallengesMap[challenge.route] = [];
-          }
-          routeChallengesMap[challenge.route].push(challenge);
-        });
+        let formattedRoutes = [];
 
-        // Check active and completed challenges for the team
-        const activeChallenge = existingChallenge.find(
-          (challenge) =>
-            challenge._id.toString() === existingTeam.active_challenge
-        );
-        const completedChallenges = existingTeam.completed_challenges.map(
-          (challengeId) =>
-            existingChallenge.find(
-              (challenge) => challenge._id.toString() === challengeId
-            )
-        );
-        const pendingChallenges = existingChallenge.filter(
-          (challenge) =>
-            !existingTeam.completed_challenges.includes(
-              challenge._id.toString()
-            ) && challenge._id.toString() !== existingTeam.active_challenge
-        );
+        for (const existingRoute of routes) {
+          const formattedRoute = await this.getFormattedRoute(
+            existingRoute,
+            existingChallenge,
+            existingTeam
+          );
 
-        // Map each route object to include active, completed, and pending challenges
-        const routesWithChallenges = existingRoute.map((route) => {
-          const filteredRoute = PatternUtil.filterParametersFromObject(route, [
-            "created_on",
-            "deleted_on",
-          ]);
-          filteredRoute.active_challenge = activeChallenge
-            ? activeChallenge
-            : null;
-          filteredRoute.completed_challenges = completedChallenges
-            ? completedChallenges
-            : [];
-          filteredRoute.pending_challenges = pendingChallenges
-            ? pendingChallenges
-            : [];
-          return filteredRoute;
-        });
+          formattedRoutes.push(formattedRoute);
+        }
 
-        return {
-          routes: routesWithChallenges,
-        };
+        return { routes: formattedRoutes };
       } else {
         // Get routes and challenges concurrently
         const [existingRoute, existingChallenge] = await Promise.all([
@@ -179,28 +147,112 @@ export default class RouteService {
     }
   }
 
-  static async setStartTime(routeId) {
+  static async getFormattedRoute(route, existingChallenges, existingTeam) {
+    if (!existingTeam) {
+      throw new Error("No such team exists with this ID");
+    }
+
+    // Filter challenges for the specific route
+    const routeChallenges = existingChallenges.filter(
+      (challenge) => challenge.route.toString() === route._id.toString()
+    );
+
+    // Check active and completed challenges for the team
+    const activeChallenge = routeChallenges.find(
+      (challenge) => challenge._id.toString() === existingTeam.active_challenge
+    );
+    const completedChallenges = existingTeam.completed_challenges.map(
+      (challengeId) =>
+        routeChallenges.find(
+          (challenge) => challenge._id.toString() === challengeId
+        )
+    );
+    const pendingChallenges = routeChallenges.filter(
+      (challenge) =>
+        !existingTeam.completed_challenges.includes(challenge._id.toString()) &&
+        challenge._id.toString() !== existingTeam.active_challenge
+    );
+
+    // Prepare the route object with associated challenges
+    const formattedRoute = PatternUtil.filterParametersFromObject(route, [
+      "created_on",
+      "deleted_on",
+    ]);
+    formattedRoute.active_challenge = activeChallenge ? activeChallenge : null;
+    formattedRoute.completed_challenges = completedChallenges
+      ? completedChallenges
+      : [];
+    formattedRoute.pending_challenges = pendingChallenges
+      ? pendingChallenges
+      : [];
+
+    let timings = null;
+
+    const timingsInfo = await TimingService.getTimingDetails(
+      existingTeam.team_code,
+      route._id.toString(),
+      route.total_time
+    );
+
+    if (timingsInfo) {
+      timings = timingsInfo.timings;
+    }
+    formattedRoute.timings = timings;
+
+    return formattedRoute;
+  }
+
+  static async startRouteForTeam(routeId, code) {
     try {
-      const existingRoute = await RouteDAO.getRouteByIDFromDB(routeId);
+      let [existingRoute, existingChallenge, existingTeam] = await Promise.all([
+        RouteDAO.getRouteByIDFromDB(routeId),
+        ChallengeDAO.getAllChallengesFromDB(),
+        TeamDAO.getTeamByTeamCode(code),
+      ]);
+
+      const timingsInfo = await TimingService.getTimingDetails(
+        existingTeam.team_code,
+        existingRoute._id.toString(),
+        existingRoute.total_time
+      );
+
+      if (timingsInfo) {
+        return "Already started this route";
+      }
+
       if (!existingRoute) {
         return "No route found for this ID";
       }
 
-      existingRoute.start_time = new Date();
-
-      const updateResult = await RouteDAO.updateRouteInDB(existingRoute);
-
-      if (updateResult) {
-        return {};
-      } else {
-        return "Failed to update the route";
+      if (existingChallenge) {
+        existingChallenge = existingChallenge.map((challenge) => {
+          return PatternUtil.filterParametersFromObject(challenge, [
+            "created_on",
+            "deleted_on",
+          ]);
+        });
       }
+
+      const timings = await TimingService.addTiming(
+        existingTeam.fcm_token,
+        code,
+        routeId,
+        existingRoute.total_time
+      );
+
+      const route = await this.getFormattedRoute(
+        existingRoute,
+        existingChallenge,
+        existingTeam
+      );
+
+      return { route: route };
     } catch (e) {
       return e.message;
     }
   }
 
-  static async markRouteComplete(routeId, team_code) {
+  static async endRouteForTeam(routeId, team_code) {
     try {
       const [existingRoute, existingChallenge, existingTeam] =
         await Promise.all([
@@ -217,9 +269,29 @@ export default class RouteService {
         return "No challenges found for this route";
       }
 
-      existingRoute.end_time = new Date();
-      existingRoute.time_taken =
-        (existingRoute.end_time - existingRoute.start_time) / (1000 * 60);
+      let timingsInfo = await TimingService.getTimingDetails(
+        team_code,
+        existingRoute._id.toString(),
+        existingRoute.total_time
+      );
+
+      if (!timingsInfo) {
+        return "This route hasn't been started yet";
+      }
+      const startTime = timingsInfo.timings.start_time;
+      let endTime = timingsInfo.timings.end_time;
+
+      if (timingsInfo.timings.end_time === null) {
+        await TimingService.addEndTime(team_code, existingRoute._id.toString());
+        timingsInfo = await TimingService.getTimingDetails(
+          team_code,
+          existingRoute._id.toString(),
+          existingRoute.total_time
+        );
+        endTime = timingsInfo.timings.end_time;
+      }
+
+      existingRoute.time_taken = (endTime - startTime) / (1000 * 60);
 
       let completed_challenges_no = 0;
 

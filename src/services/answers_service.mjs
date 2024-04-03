@@ -27,8 +27,7 @@ export default class AnswerService {
 
       const score = quesResponse.score;
       let is_correct = false;
-
-      if (quesResponse.answer == answer) {
+      if (quesResponse.type === "picture" || quesResponse.answer == answer) {
         const teamResponse = await TeamService.getTeamByTeamCode(team_code);
 
         if (!teamResponse) {
@@ -36,7 +35,13 @@ export default class AnswerService {
         }
 
         const new_team_score = score + teamResponse.score;
-        await TeamService.updateTeamDetails(team_code, new_team_score);
+        await TeamService.updateTeamDetails(
+          team_code,
+          null,
+          new_team_score,
+          null,
+          null
+        );
         is_correct = true;
       }
 
