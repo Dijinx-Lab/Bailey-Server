@@ -3,7 +3,7 @@ import TokenUtil from "../utility/token_util.mjs";
 
 const checkTokenMiddleware = async (req, res, next) => {
   let token = req.headers["authorization"];
-  //console.log(req.headers);
+
   let errorMessage;
   let tokenObject;
 
