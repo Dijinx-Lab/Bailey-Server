@@ -30,14 +30,12 @@ export default class RouteService {
     try {
       const createdOn = new Date();
       const deletedOn = null;
-      const end_time = null;
 
       const routeDocument = {
         intro_video: intro_video,
         total_time: total_time,
         finish_line_lat: finish_line_lat,
         finish_line_long: finish_line_long,
-        end_time: end_time,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
