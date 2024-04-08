@@ -6,6 +6,7 @@ import TokenService from "./token_service.mjs";
 import QuestionService from "./questions_service.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TeamService from "./teams_service.mjs";
+import AwsUtil from "../utility/aws_util.mjs";
 
 export default class AnswerService {
   static async connectDatabase(client) {
@@ -20,6 +21,9 @@ export default class AnswerService {
     try {
       const questionId = new ObjectId(question);
       const quesResponse = await QuestionService.getQuestionByID(questionId);
+
+      const createdOn = new Date();
+      const deletedOn = null;
 
       if (!quesResponse) {
         return "No Question Found for this ID";
@@ -44,9 +48,6 @@ export default class AnswerService {
         );
         is_correct = true;
       }
-
-      const createdOn = new Date();
-      const deletedOn = null;
 
       const answerDocument = {
         answer: answer,
