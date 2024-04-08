@@ -141,30 +141,28 @@ export default class AnswerService {
         return "No questions found for this challenge ID";
       }
 
-      const allAnswers = [];
+      const answerPromises = existingQues.map((ques) =>
+        AnswerDAO.getAnswerByQuestionFromDB(ques._id)
+      );
+      const allAnswers = await Promise.all(answerPromises);
+      
+      const answers = allAnswers.filter(
+        (answer) => answer !== null && answer !== undefined
+      );
 
-      for (let i = 0; i < existingQues.length; i++) {
-        const existingAnswer = await AnswerDAO.getAnswerByQuestionFromDB(
-          existingQues[i]._id
-        );
-        if (existingAnswer) {
-          allAnswers.push(existingAnswer);
-        }
-      }
-
-      if (allAnswers.length === 0) {
+      if (answers.length === 0) {
         return "No answer found for this team code";
       } else {
-        for (let i = 0; i < allAnswers.length; i++) {
+        for (let i = 0; i < answers.length; i++) {
           const filteredAnswer = PatternUtil.filterParametersFromObject(
-            allAnswers[i],
+            answers[i],
             ["created_on", "deleted_on"]
           );
 
-          allAnswers[i] = filteredAnswer;
+          answers[i] = filteredAnswer;
         }
 
-        return allAnswers;
+        return answers;
       }
     } catch (e) {
       return e.message;
