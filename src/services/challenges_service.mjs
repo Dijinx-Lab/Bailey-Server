@@ -5,6 +5,7 @@ import RouteService from "./routes_service.mjs";
 import RouteDAO from "../data/routes_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
+import TeamDAO from "../data/team_dao.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {
@@ -245,6 +246,66 @@ export default class ChallengeService {
       // filteredChallenge.answers = challengeAnswers;
 
       return { challenge: filteredChallenge, answers: challengeAnswers };
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllChallengeDetails() {
+    try {
+      const [existingChallenge, existingTeam] = await Promise.all([
+        ChallengeDAO.getAllChallengesFromDB(),
+        TeamDAO.getAllTeamsFromDB(),
+      ]);
+
+      const total_challenges = existingChallenge.length;
+      const completed_challenges = existingTeam.reduce((total, team) => {
+        return total + team.completed_challenges.length;
+      }, 0);
+      const uncompleted_challenges = total_challenges - completed_challenges;
+
+      if (!existingChallenge) {
+        return "No challenge found";
+      } else {
+        for (let i = 0; i < existingChallenge.length; i++) {
+          const filteredChallenge = PatternUtil.filterParametersFromObject(
+            existingChallenge[i],
+            ["created_on", "deleted_on"]
+          );
+
+          existingChallenge[i] = filteredChallenge;
+        }
+
+        return {
+          total_challenges: total_challenges,
+          completed_challenges: completed_challenges,
+          uncompleted_challenges: uncompleted_challenges,
+          challenges: existingChallenge,
+        };
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async deleteChallenge(id) {
+    try {
+      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
+      if (!existingChallenge) {
+        return "No challenge found for this id";
+      }
+
+      existingChallenge.deleted_on = new Date();
+
+      const updateResult = await ChallengeDAO.updateChallengeInDB(
+        existingChallenge
+      );
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to delete the challenge";
+      }
     } catch (e) {
       return e.message;
     }

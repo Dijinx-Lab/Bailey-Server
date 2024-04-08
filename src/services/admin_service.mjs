@@ -1,23 +1,23 @@
-import UserDAO from "../data/user_dao.mjs";
+import AdminDAO from "../data/admin_dao.mjs";
 import AuthUtil from "../utility/auth_util.mjs";
 import PatternUtil from "../utility/pattern_util.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 import TokenService from "./token_service.mjs";
 
-export default class UserService {
+export default class AdminService {
   static async connectDatabase(client) {
     try {
-      await UserDAO.injectDB(client);
+      await AdminDAO.injectDB(client);
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
     }
   }
 
-  static async addUser(firstname, lastname, email, password) {
+  static async addAdmin(firstname, lastname, email, password) {
     try {
-      const existingUser = await UserDAO.getUserByEmailFromDB(email);
-      if (existingUser) {
-        return "User with this email already exists";
+      const existingAdmin = await AdminDAO.getAdminByEmailFromDB(email);
+      if (existingAdmin) {
+        return "Admin with this email already exists";
       }
       const passwordCheck = PatternUtil.checkPasswordLength(password);
       if (!passwordCheck) {
@@ -38,39 +38,39 @@ export default class UserService {
       const createdOn = new Date();
       const deletedOn = null;
 
-      const userDocument = {
+      const adminDocument = {
         email: email,
         firstname: firstname,
         lastname: lastname,
         password: hashedPassword,
-        role: "user",
+        role: "admin",
         created_on: createdOn,
         deleted_on: deletedOn,
       };
 
-      const addedUserId = await UserDAO.addUserToDB(userDocument);
-      const user = await UserDAO.getUserByIDFromDB(addedUserId);
-      const filteredUsers = PatternUtil.filterParametersFromObject(user, [
+      const addedAdminId = await AdminDAO.addAdminToDB(adminDocument);
+      const admin = await AdminDAO.getAdminByIDFromDB(addedAdminId);
+      const filteredAdmins = PatternUtil.filterParametersFromObject(admin, [
         "_id",
         "password",
         "role",
       ]);
 
-      return { user: filteredUsers };
+      return { admin: filteredAdmins };
     } catch (e) {
       return e.message;
     }
   }
 
-  static async signInUser(email, password, deviceName, deviceId, ipAddress) {
+  static async signInAdmin(email, password) {
     try {
-      const existingUser = await UserDAO.getUserByEmailFromDB(email);
-      if (!existingUser) {
+      const existingAdmin = await AdminDAO.getAdminByEmailFromDB(email);
+      if (!existingAdmin) {
         return "Either your email or password is incorrect";
       }
       const passwordCheck = await AuthUtil.comparePasswords(
         password,
-        existingUser.password
+        existingAdmin.password
       );
       if (!passwordCheck) {
         return "Either your email or password is incorrect";
@@ -78,18 +78,15 @@ export default class UserService {
 
       const signedInOn = new Date();
       const tokenPayload = {
-        _id: existingUser._id.toString(),
-        email: existingUser.email,
-        role: existingUser.role,
+        _id: existingAdmin._id.toString(),
+        email: existingAdmin.email,
+        role: existingAdmin.role,
         signedInOn: signedInOn,
-        deviceName: deviceName,
-        deviceId: deviceId,
-        ipAddress: ipAddress,
       };
 
       const tokenString = await TokenService.createUserToken(tokenPayload);
-      const user = await UserDAO.getUserByIDFromDB(existingUser._id);
-      const filteredUsers = PatternUtil.filterParametersFromObject(user, [
+      const admin = await AdminDAO.getAdminByIDFromDB(existingAdmin._id);
+      const filteredAdmins = PatternUtil.filterParametersFromObject(admin, [
         "_id",
         "password",
         "role",
@@ -98,14 +95,14 @@ export default class UserService {
       return {
         token: tokenString,
         signed_in_on: signedInOn,
-        user: filteredUsers,
+        admin: filteredAdmins,
       };
     } catch (e) {
       return e.message;
     }
   }
 
-  static async signOutUser(token) {
+  static async signOutAdmin(token) {
     try {
       const cleanedToken = TokenUtil.cleanToken(token);
       const deleteToken = await TokenService.deleteUserToken(cleanedToken);
@@ -116,47 +113,47 @@ export default class UserService {
     }
   }
 
-  static async getUserByID(userId) {
+  static async getAdminByID(adminId) {
     try {
-      const existingUser = await UserDAO.getUserByIDFromDB(userId);
-      if (!existingUser) {
-        return "No user found for this ID";
+      const existingAdmin = await AdminDAO.getAdminByIDFromDB(adminId);
+      if (!existingAdmin) {
+        return "No admin found for this ID";
       } else {
-        return existingUser;
+        return existingAdmin;
       }
     } catch (e) {
       return e.message;
     }
   }
 
-  static async getUserAccountDetails(userId) {
+  static async getAdminAccountDetails(adminId) {
     try {
-      const existingUser = await UserDAO.getUserByIDFromDB(userId);
-      if (!existingUser) {
-        return "No user found for this ID";
+      const existingAdmin = await AdminDAO.getAdminByIDFromDB(adminId);
+      if (!existingAdmin) {
+        return "No admin found for this ID";
       } else {
-        const filteredUsers = PatternUtil.filterParametersFromObject(
-          existingUser,
+        const filteredAdmins = PatternUtil.filterParametersFromObject(
+          existingAdmin,
           ["_id", "password", "role"]
         );
 
-        return { user: filteredUsers };
+        return { admin: filteredAdmins };
       }
     } catch (e) {
       return e.message;
     }
   }
 
-  static async updateUserAccountPassword(userId, oldPassword, newPassword) {
+  static async updateAdminAccountPassword(adminId, oldPassword, newPassword) {
     try {
-      const existingUser = await UserDAO.getUserByIDFromDB(userId);
-      if (!existingUser) {
-        return "No user found for this ID";
+      const existingAdmin = await AdminDAO.getAdminByIDFromDB(adminId);
+      if (!existingAdmin) {
+        return "No admin found for this ID";
       }
 
       const passwordCheck = await AuthUtil.comparePasswords(
         oldPassword,
-        existingUser.password
+        existingAdmin.password
       );
 
       if (!passwordCheck) {
@@ -168,8 +165,8 @@ export default class UserService {
         return "Password's length should be greater than 8 characters";
       }
       const hashedPassword = await AuthUtil.hashPassword(newPassword);
-      const updateResult = await UserDAO.updateUserPasswordInDB(
-        existingUser.email,
+      const updateResult = await AdminDAO.updateAdminPasswordInDB(
+        existingAdmin.email,
         hashedPassword
       );
 
@@ -183,11 +180,11 @@ export default class UserService {
     }
   }
 
-  static async updateUserAccountDetails(userId, firstName, lastName) {
+  static async updateAdminAccountDetails(adminId, firstName, lastName) {
     try {
-      const existingUser = await UserDAO.getUserByIDFromDB(userId);
-      if (!existingUser) {
-        return "No user found for this ID";
+      const existingAdmin = await AdminDAO.getAdminByIDFromDB(adminId);
+      if (!existingAdmin) {
+        return "No admin found for this ID";
       }
 
       if (firstName) {
@@ -195,7 +192,7 @@ export default class UserService {
         if (!firstNameCheck) {
           return "Name can not contain numbers and special characters";
         } else {
-          existingUser.firstname = firstName;
+          existingAdmin.firstname = firstName;
         }
       }
 
@@ -204,11 +201,11 @@ export default class UserService {
         if (!lastNameCheck) {
           return "Name can not contain numbers and special characters";
         } else {
-          existingUser.lastname = lastName;
+          existingAdmin.lastname = lastName;
         }
       }
 
-      const updateResult = await UserDAO.updateUserAccountInDB(existingUser);
+      const updateResult = await AdminDAO.updateAdminAccountInDB(existingAdmin);
 
       if (updateResult) {
         return {};

@@ -118,6 +118,29 @@ export default class TeamService {
     }
   }
 
+  static async getAllTeamsForAdmin() {
+    try {
+      const existingTeam = await TeamDAO.getAllTeamsFromDB();
+      const totalTeams = existingTeam.length;
+      if (!existingTeam) {
+        return "No teams found";
+      } else {
+        for (let j = 0; j < existingTeam.length; j++) {
+          const filteredTeam = PatternUtil.filterParametersFromObject(
+            existingTeam[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingTeam[j] = filteredTeam;
+        }
+
+        return { total_teams: totalTeams, teams: existingTeam };
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
   static async updateTeamDetails(
     team_code,
     fcm_token,

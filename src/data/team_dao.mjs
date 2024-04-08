@@ -51,17 +51,16 @@ export default class TeamDAO {
 
   static async getAllTeamsFromDB(sortField = "score", sortOrder = -1) {
     try {
-        let sortOptions = {};
-        sortOptions[sortField] = sortOrder;
+      let sortOptions = {};
+      sortOptions[sortField] = sortOrder;
 
-        const team = await teamcon.find().sort(sortOptions).toArray();
-        return team;
+      const team = await teamcon.find().sort(sortOptions).toArray();
+      return team;
     } catch (e) {
-        console.error(`Unable to get all teams: ${e}`);
-        return null;
+      console.error(`Unable to get all teams: ${e}`);
+      return null;
     }
-}
-
+  }
 
   static async updateTeamInDB(team) {
     try {

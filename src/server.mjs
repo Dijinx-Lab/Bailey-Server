@@ -6,6 +6,7 @@ import chalRoutes from "./routes/challenges_routes.mjs";
 import teamRoutes from "./routes/team_routes.mjs";
 import answerRoutes from "./routes/answers_routes.mjs";
 import utilRoutes from "./routes/util_routes.mjs";
+import adminRoutes from "./routes/admin_routes.mjs";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/v1", chalRoutes);
 app.use("/api/v1", teamRoutes);
 app.use("/api/v1", answerRoutes);
 app.use("/api/v1", utilRoutes);
+app.use("/api/v1", adminRoutes);
 
 app.use("*", (req, res) => res.status(404).json({ Error: "Not Found" }));
 
