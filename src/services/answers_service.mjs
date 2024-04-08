@@ -31,6 +31,7 @@ export default class AnswerService {
 
       const score = quesResponse.score;
       let is_correct = false;
+
       if (quesResponse.type === "picture" || quesResponse.answer == answer) {
         const teamResponse = await TeamService.getTeamByTeamCode(team_code);
 
@@ -38,7 +39,8 @@ export default class AnswerService {
           return "No Team Found for this Team Code";
         }
 
-        const new_team_score = score + teamResponse.score;
+        const new_team_score = score + teamResponse.team.score;
+
         await TeamService.updateTeamDetails(
           team_code,
           null,
