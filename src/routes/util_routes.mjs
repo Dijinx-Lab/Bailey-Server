@@ -8,4 +8,10 @@ const utilRoute = "/utility";
 //api routes
 router.route(utilRoute + "/upload/s3").post(UtilController.apiUploadToS3);
 
+router.get(utilRoute + "/privacy", (req, res) => {
+  const filePath =
+    "/home/ec2-user/Scavenger-Hunt-Server/res/privacy_policy.html";
+  res.sendFile(filePath);
+});
+
 export default router;
