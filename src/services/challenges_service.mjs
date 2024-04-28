@@ -122,10 +122,11 @@ export default class ChallengeService {
     questions,
     total_score,
     route,
-    description
+    description,
+    intro_url
   ) {
     try {
-      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
+      let existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
       if (!existingChallenge) {
         return "No challenge found for this id";
       }
@@ -162,12 +163,18 @@ export default class ChallengeService {
         existingChallenge.description = description;
       }
 
+      if (intro_url) {
+        existingChallenge.intro_url = intro_url;
+      }
+
       const updateResult = await ChallengeDAO.updateChallengeInDB(
         existingChallenge
       );
 
+      existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
+
       if (updateResult) {
-        return {};
+        return existingChallenge;
       } else {
         return "Failed to update the challenge";
       }

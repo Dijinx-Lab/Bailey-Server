@@ -12,14 +12,31 @@ const chalRoute = "/challenge";
 router
   .route(chalRoute + "/create")
   .post(
-    checkRequiredFieldsMiddleware(["name", "difficulty", "longitude", "latitude", "route"]),
+    checkRequiredFieldsMiddleware([
+      "name",
+      "difficulty",
+      "longitude",
+      "latitude",
+      "route",
+    ]),
     ChallengeController.apiCreateChallenge
   );
 
 router.route(chalRoute + "/details").get(ChallengeController.apiGetChallenge);
 
-router.route(chalRoute + "/details-by-route").get(ChallengeController.apiGetChallengesByRoute);
+router
+  .route(chalRoute + "/details-by-route")
+  .get(ChallengeController.apiGetChallengesByRoute);
 
-router.route(chalRoute + "/summary").get(ChallengeController.apiGetChallengeSummary);
+router
+  .route(chalRoute + "/summary")
+  .get(ChallengeController.apiGetChallengeSummary);
+
+router
+  .route(chalRoute + "/update")
+  .put(
+    checkRequiredFieldsMiddleware(["id"]),
+    ChallengeController.apiUpdateChallenge
+  );
 
 export default router;
