@@ -5,8 +5,15 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class ChallengeController {
   static async apiCreateChallenge(req, res, next) {
     try {
-      const { name, difficulty, longitude, latitude, route, description } =
-        req.body;
+      const {
+        name,
+        difficulty,
+        longitude,
+        latitude,
+        route,
+        description,
+        intro_url,
+      } = req.body;
 
       const serviceResponse = await ChallengeService.addChallenge(
         name,
@@ -14,7 +21,8 @@ export default class ChallengeController {
         longitude,
         latitude,
         route,
-        description
+        description,
+        intro_url
       );
       if (typeof serviceResponse === "string") {
         res

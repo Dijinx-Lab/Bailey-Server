@@ -21,7 +21,8 @@ export default class ChallengeService {
     longitude,
     latitude,
     route,
-    description
+    description,
+    intro_url
   ) {
     try {
       const createdOn = new Date();
@@ -31,6 +32,7 @@ export default class ChallengeService {
 
       const chalDocument = {
         name: name,
+        intro_url: intro_url ?? null,
         difficulty: difficulty,
         longitude: longitude,
         latitude: latitude,
