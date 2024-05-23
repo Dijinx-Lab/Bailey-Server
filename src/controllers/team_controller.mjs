@@ -29,11 +29,11 @@ export default class TeamController {
 
   static async apiGetTeam(req, res, next) {
     try {
-      const _id = req.query._id;
-      const serviceResponse = await TeamService.getTeamByID(_id);
+      const code = req.query.code;
+      const serviceResponse = await TeamService.getTeamByCodeForAdmin(code);
       if (typeof serviceResponse === "string") {
         res
-          .status(200)
+          .status(200)  
           .json({ success: false, data: {}, message: serviceResponse });
       } else {
         res.status(200).json({

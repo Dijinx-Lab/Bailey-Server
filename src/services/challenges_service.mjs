@@ -86,6 +86,68 @@ export default class ChallengeService {
     }
   }
 
+  static async getChallengeByID(chalId) {
+    try {
+      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(
+        chalId
+      );
+      if (!existingChallenge) {
+        return "No challenge found for this ID";
+      } else {
+        if (existingChallenge.route != null) {
+          const chalResponse = await RouteService.getRouteByID(
+            existingChallenge.route
+          );
+          if (typeof chalResponse !== "string") {
+            existingChallenge.route = chalResponse;
+          }
+        }
+        const filteredChallenge = PatternUtil.filterParametersFromObject(
+          existingChallenge,
+          ["created_on", "deleted_on"]
+        );
+        return filteredChallenge;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getChallengeByIDForAdmin(chalId) {
+    try {
+      const [existingChallenge, existingQuestion] = await Promise.all([
+        ChallengeDAO.getChallengeByIDFromDB(chalId),
+        QuestionDAO.getQuestionsByChallengeFromDB(chalId),
+      ]);
+      if (!existingChallenge) {
+        return "No challenge found for this ID";
+      } else {
+        const filteredChallenge = PatternUtil.filterParametersFromObject(
+          existingChallenge,
+          ["created_on", "deleted_on"]
+        );
+
+        const existingRoute = await RouteDAO.getRouteByIDFromDB(existingChallenge.route);
+
+        for (let i = 0; i < existingQuestion.length; i++){
+          const filteredQuestion = PatternUtil.filterParametersFromObject(
+            existingQuestion[i],
+            ["created_on", "deleted_on"]
+          );
+
+          existingQuestion[i] = filteredQuestion;
+        }
+
+        filteredChallenge.total_questions = existingQuestion.length;
+        filteredChallenge.intro_video = existingRoute.intro_video;
+
+        return {challenge: filteredChallenge, question: existingQuestion};
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
   static async getChallengesByRoute(routeId) {
     try {
       const existingChallenge = await ChallengeDAO.getChallengeByRouteFromDB(

@@ -22,7 +22,7 @@ router
     ChallengeController.apiCreateChallenge
   );
 
-router.route(chalRoute + "/details").get(ChallengeController.apiGetChallenge);
+router.route(chalRoute + "/details").get(ChallengeController.apiGetChallengeForAdmin);
 
 router
   .route(chalRoute + "/details-by-route")
@@ -31,6 +31,10 @@ router
 router
   .route(chalRoute + "/summary")
   .get(ChallengeController.apiGetChallengeSummary);
+
+  router
+  .route(chalRoute + "/all-details")
+  .get(ChallengeController.apiGetAllChallengeDetails);
 
 router
   .route(chalRoute + "/update")

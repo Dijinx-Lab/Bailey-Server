@@ -8,6 +8,8 @@ import QuestionService from "./questions_service.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import ChallengeService from "./challenges_service.mjs";
 import FirebaseUtility from "../utility/fcm_utility.mjs";
+import AnswerDAO from "../data/answers_dao.mjs";
+import QuestionDAO from "../data/questions_dao.mjs";
 
 export default class TeamService {
   static async connectDatabase(client) {
@@ -62,17 +64,60 @@ export default class TeamService {
     }
   }
 
-  static async getTeamByID(teamId) {
+  static async getTeamByCodeForAdmin(team_code) {
     try {
-      const existingTeam = await TeamDAO.getTeamByIDFromDB(teamId);
+      const [existingTeam, existingAnswer, allTeams] = await Promise.all([
+        TeamDAO.getTeamByTeamCode(team_code),
+        AnswerDAO.getAnswerByTeamCode(team_code),
+        TeamDAO.getAllTeamsFromDB(),
+      ]);
+
       if (!existingTeam) {
-        return "No team found for this ID";
+        return "No team found for this code";
       } else {
         const filteredTeam = PatternUtil.filterParametersFromObject(
           existingTeam,
           ["created_on", "deleted_on"]
         );
-        return filteredTeam;
+
+        for (let j = 0; j < existingAnswer.length; j++) {
+          if (existingAnswer[j].question != null) {
+            const quesResponse = await QuestionDAO.getQuestionByIDFromDB(
+              existingAnswer[j].question
+            );
+            if (typeof quesResponse !== "string") {
+              existingAnswer[j].question = quesResponse.question;
+              existingAnswer[j].points = quesResponse.score;
+            }
+          }
+
+          const filteredAnswer = PatternUtil.filterParametersFromObject(
+            existingAnswer[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingAnswer[j] = filteredAnswer;
+        }
+
+        filteredTeam.status = filteredTeam.active_challenge
+          ? "ACTIVE"
+          : "INACTIVE";
+
+        filteredTeam.answered = existingAnswer.length;
+
+        const index = allTeams.findIndex(
+          (team) => team.team_code === team_code
+        );
+        
+        if (index !== -1) {
+          filteredTeam.leaderboard = index + 1;
+        }
+
+        const newFilteredTeam = PatternUtil.renameKeys(filteredTeam, {
+          score: "points_scored",
+        });
+
+        return { team: newFilteredTeam, answer: existingAnswer };
       }
     } catch (e) {
       return e.message;
