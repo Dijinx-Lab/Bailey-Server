@@ -10,6 +10,7 @@ import ChallengeService from "./challenges_service.mjs";
 import FirebaseUtility from "../utility/fcm_utility.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
+import TimingDAO from "../data/timing_dao.mjs";
 
 export default class TeamService {
   static async connectDatabase(client) {
@@ -66,11 +67,13 @@ export default class TeamService {
 
   static async getTeamByCodeForAdmin(team_code) {
     try {
-      const [existingTeam, existingAnswer, allTeams] = await Promise.all([
-        TeamDAO.getTeamByTeamCode(team_code),
-        AnswerDAO.getAnswerByTeamCode(team_code),
-        TeamDAO.getAllTeamsFromDB(),
-      ]);
+      const [existingTeam, existingAnswer, allTeams, routeTiming] =
+        await Promise.all([
+          TeamDAO.getTeamByTeamCode(team_code),
+          AnswerDAO.getAnswerByTeamCode(team_code),
+          TeamDAO.getAllTeamsFromDB(),
+          TimingDAO.getTimingByTeamCodeFromDB(team_code),
+        ]);
 
       if (!existingTeam) {
         return "No team found for this code";
@@ -99,18 +102,38 @@ export default class TeamService {
           existingAnswer[j] = filteredAnswer;
         }
 
-        filteredTeam.status = filteredTeam.active_challenge
-          ? "ACTIVE"
-          : "INACTIVE";
-
         filteredTeam.answered = existingAnswer.length;
 
         const index = allTeams.findIndex(
           (team) => team.team_code === team_code
         );
-        
+
         if (index !== -1) {
           filteredTeam.leaderboard = index + 1;
+        }
+
+        if (routeTiming) {
+          filteredTeam.status =
+            !routeTiming.end_time && routeTiming.start_time
+              ? "ACTIVE"
+              : "INACTIVE";
+
+          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB")
+            .format(routeTiming.start_time)
+            .toString();
+
+          if (filteredTeam.status == "INACTIVE") {
+            filteredTeam.time_taken = (
+              (routeTiming.end_time - routeTiming.start_time) /
+              (1000 * 60)
+            ).toFixed(2);
+          } else {
+            filteredTeam.time_taken = null;
+          }
+        } else {
+          filteredTeam.route_started = null;
+          filteredTeam.time_taken = null;
+          filteredTeam.status = "INACTIVE";
         }
 
         const newFilteredTeam = PatternUtil.renameKeys(filteredTeam, {
