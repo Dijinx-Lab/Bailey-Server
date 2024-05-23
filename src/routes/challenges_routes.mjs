@@ -28,6 +28,15 @@ router
   .route(chalRoute + "/details-by-route")
   .get(ChallengeController.apiGetChallengesByRoute);
 
-router.route(chalRoute + "/summary").get(ChallengeController.apiGetChallengeSummary);
+router
+  .route(chalRoute + "/summary")
+  .get(ChallengeController.apiGetChallengeSummary);
+
+router
+  .route(chalRoute + "/update")
+  .put(
+    checkRequiredFieldsMiddleware(["id"]),
+    ChallengeController.apiUpdateChallenge
+  );
 
 export default router;
