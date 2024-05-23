@@ -5,7 +5,15 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class ChallengeController {
   static async apiCreateChallenge(req, res, next) {
     try {
-      const { name, difficulty, longitude, latitude, route, description } = req.body;
+      const {
+        name,
+        difficulty,
+        longitude,
+        latitude,
+        route,
+        description,
+        intro_url,
+      } = req.body;
 
       const serviceResponse = await ChallengeService.addChallenge(
         name,
@@ -13,7 +21,8 @@ export default class ChallengeController {
         longitude,
         latitude,
         route,
-        description
+        description,
+        intro_url
       );
       if (typeof serviceResponse === "string") {
         res
@@ -54,7 +63,9 @@ export default class ChallengeController {
   static async apiGetChallengesByRoute(req, res, next) {
     try {
       const route_id = req.query.route_id;
-      const serviceResponse = await ChallengeService.getChallengesByRoute(route_id);
+      const serviceResponse = await ChallengeService.getChallengesByRoute(
+        route_id
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -75,26 +86,10 @@ export default class ChallengeController {
     try {
       const _id = req.query.id;
       const team_code = req.query.code;
-      const serviceResponse = await ChallengeService.getChallengeSummary(_id, team_code);
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "Challenge details fetched successfully",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }  
-
-  static async apiGetAllChallengesDetails(req, res, next) {
-    try {
-      const serviceResponse = await ChallengeService.getAllChallengeDetails();
+      const serviceResponse = await ChallengeService.getChallengeSummary(
+        _id,
+        team_code
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -111,10 +106,33 @@ export default class ChallengeController {
     }
   }
 
-  static async apiDeleteChallenge(req, res, next) {
+  static async apiUpdateChallenge(req, res, next) {
     try {
-      const _id = req.query.id;
-      const serviceResponse = await ChallengeService.deleteChallenge(_id);
+      const id = req.query.id;
+      const {
+        name,
+        difficulty,
+        longitude,
+        latitude,
+        questions,
+        total_score,
+        route,
+        description,
+        intro_url,
+      } = req.body;
+
+      const serviceResponse = await ChallengeService.updateChallenges(
+        id,
+        name,
+        difficulty,
+        longitude,
+        latitude,
+        questions,
+        total_score,
+        route,
+        description,
+        intro_url
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -123,7 +141,7 @@ export default class ChallengeController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Challenge deleted successfully",
+          message: "Challenge updated successfully",
         });
       }
     } catch (e) {

@@ -65,12 +65,7 @@ export default class AnswerService {
       const addedAnswerId = await AnswerDAO.addAnswerToDB(answerDocument);
       const answerResponse = await AnswerDAO.getAnswerByIDFromDB(addedAnswerId);
 
-      const filteredAnswer = PatternUtil.filterParametersFromObject(
-        answerResponse,
-        ["created_on", "deleted_on"]
-      );
-
-      return { answer: filteredAnswer };
+      return { answer: answerResponse };
     } catch (e) {
       return e.message;
     }

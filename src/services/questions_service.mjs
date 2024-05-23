@@ -127,18 +127,17 @@ export default class QuestionService {
             ["created_on", "deleted_on"]
           );
 
+          filteredQuestion.submitted_answer = null;
+
+          filteredQuestion.submitted_answer = existingAnswer.find(
+            (answer) =>
+              answer.question.toString() == filteredQuestion._id.toString()
+          );
+
           existingQues[i] = filteredQuestion;
         }
 
-        const existingAnswerIds = existingAnswer.map((answer) =>
-          answer.question.toString()
-        );
-
-        const filteredExistingQues = existingQues.filter((ques) =>
-          !existingAnswerIds.includes(ques._id.toString())
-        );
-
-        return { questions: filteredExistingQues };
+        return { questions: existingQues };
       }
     } catch (e) {
       return e.message;

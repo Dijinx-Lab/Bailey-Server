@@ -28,16 +28,6 @@ router
   .route(chalRoute + "/details-by-route")
   .get(ChallengeController.apiGetChallengesByRoute);
 
-router
-  .route(chalRoute + "/summary")
-  .get(ChallengeController.apiGetChallengeSummary);
-
-router
-  .route(chalRoute + "/all-details")
-  .get(checkTokenMiddleware, ChallengeController.apiGetAllChallengesDetails);
-
-router
-  .route(chalRoute + "/delete")
-  .post(checkTokenMiddleware, ChallengeController.apiDeleteChallenge);
+router.route(chalRoute + "/summary").get(ChallengeController.apiGetChallengeSummary);
 
 export default router;
