@@ -6,11 +6,12 @@ import ChallengeController from "../controllers/challenges_controller.mjs";
 const router = express.Router();
 
 const chalRoute = "/challenge";
+const chalAdminRoute = "/admin/challenge";
 
 //api routes
 
 router
-  .route(chalRoute + "/create")
+  .route(chalAdminRoute + "/create")
   .post(
     checkRequiredFieldsMiddleware([
       "name",
@@ -22,7 +23,9 @@ router
     ChallengeController.apiCreateChallenge
   );
 
-router.route(chalRoute + "/details").get(ChallengeController.apiGetChallengeForAdmin);
+router
+  .route(chalAdminRoute + "/details")
+  .get(ChallengeController.apiGetChallengeForAdmin);
 
 router
   .route(chalRoute + "/details-by-route")
@@ -32,12 +35,12 @@ router
   .route(chalRoute + "/summary")
   .get(ChallengeController.apiGetChallengeSummary);
 
-  router
-  .route(chalRoute + "/all-details")
+router
+  .route(chalAdminRoute + "/all-details")
   .get(ChallengeController.apiGetAllChallengeDetails);
 
 router
-  .route(chalRoute + "/update")
+  .route(chalAdminRoute + "/update")
   .put(
     checkRequiredFieldsMiddleware(["id"]),
     ChallengeController.apiUpdateChallenge

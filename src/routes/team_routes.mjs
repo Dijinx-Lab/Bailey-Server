@@ -6,14 +6,15 @@ import TeamController from "../controllers/team_controller.mjs";
 const router = express.Router();
 
 const teamRoutes = "/team";
+const teamAdminRoutes = "/admin/team";
 
 //api routes
 
 router
-  .route(teamRoutes + "/create")
+  .route(teamAdminRoutes + "/create")
   .post(checkRequiredFieldsMiddleware(["name"]), TeamController.apiCreateTeam);
 
-router.route(teamRoutes + "/details").get(TeamController.apiGetTeam);
+router.route(teamAdminRoutes + "/details").get(TeamController.apiGetTeam);
 
 router
   .route(teamRoutes + "/details-by-code")
@@ -32,11 +33,11 @@ router
   .post(TeamController.apiUpdateCompletedChallenges);
 
 router
-  .route(teamRoutes + "/all-details")
+  .route(teamAdminRoutes + "/all-details")
   .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdmin);
 
-  router
-  .route(teamRoutes + "/dashboard-summary")
+router
+  .route(teamAdminRoutes + "/dashboard-summary")
   .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdminDashboard);
 
 export default router;

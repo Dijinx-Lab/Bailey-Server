@@ -113,14 +113,19 @@ export default class TeamService {
         }
 
         if (routeTiming) {
-          filteredTeam.status = !routeTiming.end_time && routeTiming.start_time ? "ACTIVE" : "INACTIVE";
+          filteredTeam.status = routeTiming.start_time ? "ACTIVE" : "INACTIVE";
 
-          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB").format(routeTiming.start_time).toString();
+          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB")
+            .format(routeTiming.start_time)
+            .toString();
 
-          filteredTeam.time_taken = (filteredTeam.status === "INACTIVE")
-          ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60)).toFixed(2)
-          : null;
-                    
+          filteredTeam.time_taken =
+            filteredTeam.status === "INACTIVE"
+              ? (
+                  (routeTiming.end_time - routeTiming.start_time) /
+                  (1000 * 60)
+                ).toFixed(2)
+              : null;
         } else {
           filteredTeam.route_started = null;
           filteredTeam.time_taken = null;
@@ -318,10 +323,16 @@ export default class TeamService {
         }
 
         const totalTeams = existingTeam.length;
-        
-        const totalChallenges = existingChallenge ? existingChallenge.length : 0;
 
-        return { total_teams: totalTeams, total_challenges: totalChallenges, teams: existingTeam };
+        const totalChallenges = existingChallenge
+          ? existingChallenge.length
+          : 0;
+
+        return {
+          total_teams: totalTeams,
+          total_challenges: totalChallenges,
+          teams: existingTeam,
+        };
       }
     } catch (e) {
       return e.message;

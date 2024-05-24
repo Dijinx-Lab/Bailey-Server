@@ -6,6 +6,7 @@ import RouteController from "../controllers/routes_controller.mjs";
 const router = express.Router();
 
 const routes = "/route";
+const routesAdmin = "/admin/route";
 
 //api routes
 
@@ -18,7 +19,7 @@ router
 
 router.route(routes + "/details").get(RouteController.apiGetRoute);
 
-router.route(routes + "/all-details").get(RouteController.apiGetAllRoutes);
+router.route(routesAdmin + "/all-details").get(RouteController.apiGetAllRoutes);
 
 router.route(routes + "/start").post(RouteController.apiSetStartTime);
 

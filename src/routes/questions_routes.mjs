@@ -6,11 +6,12 @@ import QuestionController from "../controllers/questions_controller.mjs";
 const router = express.Router();
 
 const quesRoute = "/question";
+const quesAdminRoute = "/admin/question";
 
 //api routes
 
 router
-  .route(quesRoute + "/create")
+  .route(quesAdminRoute + "/create")
   .post(
     checkRequiredFieldsMiddleware(["score", "type", "question", "challenge"]),
     QuestionController.apiCreateQuestion
@@ -18,6 +19,8 @@ router
 
 router.route(quesRoute + "/details").get(QuestionController.apiGetQuestion);
 
-router.route(quesRoute + "/details-by-challenge").get(QuestionController.apiGetQuestionsByChallenge);
+router
+  .route(quesRoute + "/details-by-challenge")
+  .get(QuestionController.apiGetQuestionsByChallenge);
 
 export default router;

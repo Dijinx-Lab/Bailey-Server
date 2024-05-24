@@ -4,8 +4,6 @@ import TeamService from "../services/teams_service.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 
 export default class TeamController {
-  
-
   static async apiCreateTeam(req, res, next) {
     try {
       const { name } = req.body;
@@ -33,7 +31,7 @@ export default class TeamController {
       const serviceResponse = await TeamService.getTeamByCodeForAdmin(code);
       if (typeof serviceResponse === "string") {
         res
-          .status(200)  
+          .status(200)
           .json({ success: false, data: {}, message: serviceResponse });
       } else {
         res.status(200).json({
@@ -108,15 +106,21 @@ export default class TeamController {
   static async apiUpdateTeam(req, res, next) {
     try {
       const team_code = req.query.code;
-      const { score, active_challenge, completed_challenges, fcm_token } =
-        req.body;
+      const {
+        score,
+        active_challenge,
+        completed_challenges,
+        fcm_token,
+        activated_on,
+      } = req.body;
 
       const serviceResponse = await TeamService.updateTeamDetails(
         team_code,
         fcm_token,
         score,
         active_challenge,
-        completed_challenges
+        completed_challenges,
+        activated_on
       );
       if (typeof serviceResponse === "string") {
         res
@@ -200,5 +204,4 @@ export default class TeamController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
-
 }

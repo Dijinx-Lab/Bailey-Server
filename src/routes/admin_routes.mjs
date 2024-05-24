@@ -5,7 +5,7 @@ import checkTokenMiddleware from "../middleware/check_token_middleware.mjs";
 
 const router = express.Router();
 
-const adminRoute = "/admin";
+const adminRoute = "/admin/auth";
 //api routes
 router
   .route(adminRoute + "/create")
