@@ -31,4 +31,12 @@ router
   .route(teamRoutes + "/mark-complete")
   .post(TeamController.apiUpdateCompletedChallenges);
 
+router
+  .route(teamRoutes + "/all-details")
+  .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdmin);
+
+  router
+  .route(teamRoutes + "/dashboard-summary")
+  .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdminDashboard);
+
 export default router;

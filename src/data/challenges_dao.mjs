@@ -9,7 +9,9 @@ export default class ChallengeDAO {
       return;
     }
     try {
-      challengecon = conn.db(databaseConfig.database.dbName).collection("challenges");
+      challengecon = conn
+        .db(databaseConfig.database.dbName)
+        .collection("challenges");
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
     }
@@ -41,7 +43,9 @@ export default class ChallengeDAO {
 
   static async getChallengeByRouteFromDB(route) {
     try {
-      const challenge = await challengecon.find({ route: new ObjectId(route) }).toArray();
+      const challenge = await challengecon
+        .find({ route: new ObjectId(route), deleted_on: { $eq: null } })
+        .toArray();
       return challenge;
     } catch (e) {
       console.error(`Unable to get challenge by route: ${e}`);
@@ -51,8 +55,10 @@ export default class ChallengeDAO {
 
   static async getAllChallengesFromDB() {
     try {
-      const challenge = await challengecon.find().toArray();
-      return challenge;
+      const challenges = await challengecon
+        .find({ deleted_on: { $eq: null } })
+        .toArray();
+      return challenges;
     } catch (e) {
       console.error(`Unable to get all challenges: ${e}`);
       return null;

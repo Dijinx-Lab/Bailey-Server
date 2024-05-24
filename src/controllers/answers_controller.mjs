@@ -66,4 +66,24 @@ export default class AnswerController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiGetAnswersByChallenges(req, res, next) {
+    try {
+      const _id = req.query.id;
+      const serviceResponse = await AnswerService.getAnswerByChallenges(_id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Answer details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
 }

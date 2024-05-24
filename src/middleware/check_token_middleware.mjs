@@ -1,4 +1,4 @@
-import UserService from "../services/user_service.mjs";
+import AdminService from "../services/admin_service.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 
 const checkTokenMiddleware = async (req, res, next) => {
@@ -22,7 +22,7 @@ const checkTokenMiddleware = async (req, res, next) => {
       } else {
         //const userObject = await UserService.getUserByID(tokenObject.user_id);
 
-        if (tokenObject.role !== "user") {
+        if (tokenObject.role !== "admin") {
           errorMessage =
             "You do not have the permissions to perform this operation";
         }

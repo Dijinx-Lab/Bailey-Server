@@ -33,6 +33,15 @@ const PatternUtil = {
     }
     return result;
   },
+
+  renameKeys: (object, keyMap) => {
+    const renamedObject = {};
+    Object.keys(object).forEach((key) => {
+      const newKey = keyMap[key] || key;
+      renamedObject[newKey] = object[key];
+    });
+    return renamedObject;
+  },
 };
 
 export default PatternUtil;

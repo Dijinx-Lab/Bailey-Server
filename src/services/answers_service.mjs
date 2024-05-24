@@ -7,6 +7,7 @@ import QuestionService from "./questions_service.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TeamService from "./teams_service.mjs";
 import AwsUtil from "../utility/aws_util.mjs";
+import QuestionDAO from "../data/questions_dao.mjs";
 
 export default class AnswerService {
   static async connectDatabase(client) {
@@ -119,6 +120,44 @@ export default class AnswerService {
         }
 
         return existingAnswer;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAnswerByChallenges(chalId) {
+    try {
+      const existingQues = await QuestionDAO.getQuestionsByChallengeFromDB(
+        chalId
+      );
+
+      if (!existingQues) {
+        return "No questions found for this challenge ID";
+      }
+
+      const answerPromises = existingQues.map((ques) =>
+        AnswerDAO.getAnswerByQuestionFromDB(ques._id)
+      );
+      const allAnswers = await Promise.all(answerPromises);
+      
+      const answers = allAnswers.filter(
+        (answer) => answer !== null && answer !== undefined
+      );
+
+      if (answers.length === 0) {
+        return "No answer found for this team code";
+      } else {
+        for (let i = 0; i < answers.length; i++) {
+          const filteredAnswer = PatternUtil.filterParametersFromObject(
+            answers[i],
+            ["created_on", "deleted_on"]
+          );
+
+          answers[i] = filteredAnswer;
+        }
+
+        return answers;
       }
     } catch (e) {
       return e.message;

@@ -8,6 +8,9 @@ import QuestionService from "./questions_service.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import ChallengeService from "./challenges_service.mjs";
 import FirebaseUtility from "../utility/fcm_utility.mjs";
+import AnswerDAO from "../data/answers_dao.mjs";
+import QuestionDAO from "../data/questions_dao.mjs";
+import TimingDAO from "../data/timing_dao.mjs";
 
 export default class TeamService {
   static async connectDatabase(client) {
@@ -62,17 +65,73 @@ export default class TeamService {
     }
   }
 
-  static async getTeamByID(teamId) {
+  static async getTeamByCodeForAdmin(team_code) {
     try {
-      const existingTeam = await TeamDAO.getTeamByIDFromDB(teamId);
+      const [existingTeam, existingAnswer, allTeams, routeTiming] =
+        await Promise.all([
+          TeamDAO.getTeamByTeamCode(team_code),
+          AnswerDAO.getAnswerByTeamCode(team_code),
+          TeamDAO.getAllTeamsFromDB(),
+          TimingDAO.getTimingByTeamCodeFromDB(team_code),
+        ]);
+
       if (!existingTeam) {
-        return "No team found for this ID";
+        return "No team found for this code";
       } else {
         const filteredTeam = PatternUtil.filterParametersFromObject(
           existingTeam,
           ["created_on", "deleted_on"]
         );
-        return filteredTeam;
+
+        for (let j = 0; j < existingAnswer.length; j++) {
+          if (existingAnswer[j].question != null) {
+            const quesResponse = await QuestionDAO.getQuestionByIDFromDB(
+              existingAnswer[j].question
+            );
+            if (typeof quesResponse !== "string") {
+              existingAnswer[j].question = quesResponse.question;
+              existingAnswer[j].points = quesResponse.score;
+            }
+          }
+
+          const filteredAnswer = PatternUtil.filterParametersFromObject(
+            existingAnswer[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingAnswer[j] = filteredAnswer;
+        }
+
+        filteredTeam.answered = existingAnswer.length;
+
+        const index = allTeams.findIndex(
+          (team) => team.team_code === team_code
+        );
+
+        if (index !== -1) {
+          filteredTeam.leaderboard = index + 1;
+        }
+
+        if (routeTiming) {
+          filteredTeam.status = !routeTiming.end_time && routeTiming.start_time ? "ACTIVE" : "INACTIVE";
+
+          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB").format(routeTiming.start_time).toString();
+
+          filteredTeam.time_taken = (filteredTeam.status === "INACTIVE")
+          ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60)).toFixed(2)
+          : null;
+                    
+        } else {
+          filteredTeam.route_started = null;
+          filteredTeam.time_taken = null;
+          filteredTeam.status = "INACTIVE";
+        }
+
+        const newFilteredTeam = PatternUtil.renameKeys(filteredTeam, {
+          score: "points_scored",
+        });
+
+        return { team: newFilteredTeam, answer: existingAnswer };
       }
     } catch (e) {
       return e.message;
@@ -112,6 +171,29 @@ export default class TeamService {
         }
 
         return { teams: existingTeam };
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllTeamsForAdmin() {
+    try {
+      const existingTeam = await TeamDAO.getAllTeamsFromDB();
+      const totalTeams = existingTeam.length;
+      if (!existingTeam) {
+        return "No teams found";
+      } else {
+        for (let j = 0; j < existingTeam.length; j++) {
+          const filteredTeam = PatternUtil.filterParametersFromObject(
+            existingTeam[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingTeam[j] = filteredTeam;
+        }
+
+        return { total_teams: totalTeams, teams: existingTeam };
       }
     } catch (e) {
       return e.message;
@@ -210,6 +292,36 @@ export default class TeamService {
         return summaryResponse;
       } else {
         return "Failed to update the team";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllTeamsForAdminDashboard() {
+    try {
+      const [existingTeam, existingChallenge] = await Promise.all([
+        TeamDAO.getAllTeamsFromDBForDashboard(),
+        ChallengeDAO.getAllChallengesFromDB(),
+      ]);
+
+      if (!existingTeam) {
+        return "No teams found";
+      } else {
+        for (let j = 0; j < existingTeam.length; j++) {
+          const filteredTeam = PatternUtil.filterParametersFromObject(
+            existingTeam[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingTeam[j] = filteredTeam;
+        }
+
+        const totalTeams = existingTeam.length;
+        
+        const totalChallenges = existingChallenge ? existingChallenge.length : 0;
+
+        return { total_teams: totalTeams, total_challenges: totalChallenges, teams: existingTeam };
       }
     } catch (e) {
       return e.message;

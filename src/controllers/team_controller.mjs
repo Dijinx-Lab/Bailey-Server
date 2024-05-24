@@ -29,11 +29,11 @@ export default class TeamController {
 
   static async apiGetTeam(req, res, next) {
     try {
-      const _id = req.query._id;
-      const serviceResponse = await TeamService.getTeamByID(_id);
+      const code = req.query.code;
+      const serviceResponse = await TeamService.getTeamByCodeForAdmin(code);
       if (typeof serviceResponse === "string") {
         res
-          .status(200)
+          .status(200)  
           .json({ success: false, data: {}, message: serviceResponse });
       } else {
         res.status(200).json({
@@ -70,6 +70,25 @@ export default class TeamController {
   static async apiGetAllTeams(req, res, next) {
     try {
       const serviceResponse = await TeamService.getAllTeams();
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiGetAllTeamsForAdmin(req, res, next) {
+    try {
+      const serviceResponse = await TeamService.getAllTeamsForAdmin();
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -162,4 +181,24 @@ export default class TeamController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiGetAllTeamsForAdminDashboard(req, res, next) {
+    try {
+      const serviceResponse = await TeamService.getAllTeamsForAdminDashboard();
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
 }

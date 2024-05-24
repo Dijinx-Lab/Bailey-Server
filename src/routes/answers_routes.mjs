@@ -12,20 +12,18 @@ const answerRoute = "/answer";
 router
   .route(answerRoute + "/create")
   .post(
-    checkRequiredFieldsMiddleware([
-      "answer",
-      "team_code",
-      "question",
-    ]),
+    checkRequiredFieldsMiddleware(["answer", "team_code", "question"]),
     AnswerController.apiCreateAnswer
   );
 
-router
-  .route(answerRoute + "/details")
-  .get(AnswerController.apiGetAnswer);
+router.route(answerRoute + "/details").get(AnswerController.apiGetAnswer);
 
-  router
+router
   .route(answerRoute + "/details-by-team")
   .get(AnswerController.apiGetAnswerByTeam);
+
+router
+  .route(answerRoute + "/details-by-challenges")
+  .get(AnswerController.apiGetAnswersByChallenges);
 
 export default router;

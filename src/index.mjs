@@ -10,6 +10,8 @@ import AnswerService from "./services/answers_service.mjs";
 import FirebaseUtility from "./utility/fcm_utility.mjs";
 import TimingService from "./services/timing_service.mjs";
 import AwsUtil from "./utility/aws_util.mjs";
+import AdminService from "./services/admin_service.mjs";
+import TokenService from "./services/token_service.mjs";
 
 const port = appConfig.server.port;
 
@@ -32,6 +34,8 @@ MongoClient.connect(uri, {
     await TeamService.connectDatabase(client);
     await AnswerService.connectDatabase(client);
     await TimingService.connectDatabase(client);
+    await AdminService.connectDatabase(client);
+    await TokenService.connectDatabase(client);
     FirebaseUtility.initializeApp();
     AwsUtil.initialize();
     app.listen(port, () => {
