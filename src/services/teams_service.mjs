@@ -113,23 +113,14 @@ export default class TeamService {
         }
 
         if (routeTiming) {
-          filteredTeam.status =
-            !routeTiming.end_time && routeTiming.start_time
-              ? "ACTIVE"
-              : "INACTIVE";
+          filteredTeam.status = !routeTiming.end_time && routeTiming.start_time ? "ACTIVE" : "INACTIVE";
 
-          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB")
-            .format(routeTiming.start_time)
-            .toString();
+          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB").format(routeTiming.start_time).toString();
 
-          if (filteredTeam.status == "INACTIVE") {
-            filteredTeam.time_taken = (
-              (routeTiming.end_time - routeTiming.start_time) /
-              (1000 * 60)
-            ).toFixed(2);
-          } else {
-            filteredTeam.time_taken = null;
-          }
+          filteredTeam.time_taken = (filteredTeam.status === "INACTIVE")
+          ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60)).toFixed(2)
+          : null;
+                    
         } else {
           filteredTeam.route_started = null;
           filteredTeam.time_taken = null;
@@ -301,6 +292,36 @@ export default class TeamService {
         return summaryResponse;
       } else {
         return "Failed to update the team";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllTeamsForAdminDashboard() {
+    try {
+      const [existingTeam, existingChallenge] = await Promise.all([
+        TeamDAO.getAllTeamsFromDBForDashboard(),
+        ChallengeDAO.getAllChallengesFromDB(),
+      ]);
+
+      if (!existingTeam) {
+        return "No teams found";
+      } else {
+        for (let j = 0; j < existingTeam.length; j++) {
+          const filteredTeam = PatternUtil.filterParametersFromObject(
+            existingTeam[j],
+            ["created_on", "deleted_on"]
+          );
+
+          existingTeam[j] = filteredTeam;
+        }
+
+        const totalTeams = existingTeam.length;
+        
+        const totalChallenges = existingChallenge ? existingChallenge.length : 0;
+
+        return { total_teams: totalTeams, total_challenges: totalChallenges, teams: existingTeam };
       }
     } catch (e) {
       return e.message;

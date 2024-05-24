@@ -76,4 +76,16 @@ export default class TeamDAO {
       return null;
     }
   }
+
+  static async getAllTeamsFromDBForDashboard() {
+    try {
+      const sortOptions = { created_on: -1 };
+
+      const teams = await teamcon.find().sort(sortOptions).toArray();
+      return teams;
+    } catch (e) {
+      console.error(`Unable to get all teams: ${e}`);
+      return null;
+    }
+  }
 }

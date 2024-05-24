@@ -181,4 +181,24 @@ export default class TeamController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiGetAllTeamsForAdminDashboard(req, res, next) {
+    try {
+      const serviceResponse = await TeamService.getAllTeamsForAdminDashboard();
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
 }
