@@ -94,7 +94,7 @@ export default class TeamService {
             );
             if (typeof quesResponse !== "string") {
               existingAnswer[j].question = quesResponse.question;
-              existingAnswer[j].points = quesResponse.score;
+              // existingAnswer[j].points = quesResponse.score;
             }
           }
 
@@ -198,7 +198,7 @@ export default class TeamService {
             existingTeam[j],
             ["created_on", "deleted_on"]
           );
-
+          filteredTeam.leaderboard = j + 1;
           existingTeam[j] = filteredTeam;
         }
 
