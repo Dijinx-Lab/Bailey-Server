@@ -7,6 +7,7 @@ const router = express.Router();
 
 const routes = "/route";
 const routesAdmin = "/admin/route";
+const routesAdminSettings = "/admin/settings";
 
 //api routes
 
@@ -16,6 +17,14 @@ router
     checkRequiredFieldsMiddleware(["intro_video", "total_time"]),
     RouteController.apiCreateRoute
   );
+
+router
+  .route(routesAdminSettings + "/update")
+  .post(RouteController.apiUpdateRoute);
+
+router
+  .route(routesAdminSettings + "/details")
+  .post(RouteController.apiGetRouteSettings);
 
 router.route(routes + "/details").get(RouteController.apiGetRoute);
 

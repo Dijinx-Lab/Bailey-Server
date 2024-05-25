@@ -1,8 +1,11 @@
 import multer from "multer";
 import UtilService from "../services/util_service.mjs";
 
+
 // Multer configuration
 const upload = multer();
+
+
 
 export default class UtilController {
   static async apiUploadToS3(req, res, next) {
@@ -41,4 +44,6 @@ export default class UtilController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  
 }

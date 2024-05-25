@@ -29,6 +29,61 @@ export default class RouteController {
     }
   }
 
+  static async apiUpdateRoute(req, res, next) {
+    try {
+      const _id = req.query.id;
+      const {
+        intro_video,
+        outro_video,
+        total_time,
+        terms_and_conditions,
+        privacy_policy,
+      } = req.body;
+
+      const serviceResponse = await RouteService.updateRouteDetails(
+        _id,
+        intro_video,
+        outro_video,
+        total_time,
+        terms_and_conditions,
+        privacy_policy
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Route updated successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiGetRouteSettings(req, res, next) {
+    try {
+      const _id = req.query.id;
+      const serviceResponse = await RouteService.getRouteSettings(_id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Route details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
   static async apiGetRoute(req, res, next) {
     try {
       const _id = req.query.id;

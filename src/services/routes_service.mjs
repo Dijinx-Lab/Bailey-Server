@@ -11,6 +11,7 @@ import TeamDAO from "../data/team_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TimingService from "./timing_service.mjs";
+import UtilService from "./util_service.mjs";
 
 export default class RouteService {
   static async connectDatabase(client) {
@@ -43,6 +44,77 @@ export default class RouteService {
       ]);
 
       return { route: filteredRoute };
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async updateRouteDetails(
+    routeId,
+    intro_video,
+    outro_video,
+    total_time,
+    terms_and_conditions,
+    privacy_policy
+  ) {
+    try {
+      let existingRoute = await RouteDAO.getRouteByIDFromDB(routeId);
+      if (!existingRoute) {
+        return "No route found for this ID";
+      }
+
+      if (intro_video) {
+        existingRoute.intro_video = intro_video;
+      }
+
+      if (outro_video) {
+        existingRoute.outro_video = outro_video;
+      }
+
+      if (total_time) {
+        existingRoute.total_time = total_time;
+      }
+
+      if (terms_and_conditions) {
+        await UtilService.apiUpdateFile(terms_and_conditions, "terms");
+      }
+
+      if (privacy_policy) {
+        await UtilService.apiUpdateFile(privacy_policy, "privacy");
+      }
+
+      if (intro_video || outro_video || total_time) {
+        const updateResult = await RouteDAO.updateRouteInDB(existingRoute);
+      }
+
+      return await this.getRouteSettings(routeId);
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getRouteSettingsForAdmin(routeId) {
+    return await this.getRouteSettings(routeId);
+  }
+
+  static async getRouteSettings(routeId) {
+    try {
+      const existingRoute = await RouteDAO.getRouteByIDFromDB(routeId);
+      const privacyData = await UtilService.apiGetFileContent("privacy");
+      const termsData = await UtilService.apiGetFileContent("terms");
+      if (!existingRoute) {
+        return "No route found for this ID";
+      } else {
+        const settings = {
+          intro_video: existingRoute.intro_video,
+          outro_video: existingRoute.outro_video,
+          total_time: existingRoute.total_time,
+          privacy_policy: privacyData,
+          terms_and_conditions: termsData,
+        };
+
+        return settings;
+      }
     } catch (e) {
       return e.message;
     }
