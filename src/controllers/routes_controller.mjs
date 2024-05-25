@@ -6,14 +6,12 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class RouteController {
   static async apiCreateRoute(req, res, next) {
     try {
-      const { intro_video, total_time, finish_line_lat, finish_line_long } =
-        req.body;
+      const { intro_video, outro_video, total_time } = req.body;
 
       const serviceResponse = await RouteService.addRoute(
         intro_video,
-        total_time,
-        finish_line_lat,
-        finish_line_long
+        outro_video,
+        total_time
       );
       if (typeof serviceResponse === "string") {
         res

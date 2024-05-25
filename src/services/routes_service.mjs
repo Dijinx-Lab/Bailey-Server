@@ -21,21 +21,15 @@ export default class RouteService {
     }
   }
 
-  static async addRoute(
-    intro_video,
-    total_time,
-    finish_line_lat,
-    finish_line_long
-  ) {
+  static async addRoute(intro_video, outro_video, total_time) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
 
       const routeDocument = {
         intro_video: intro_video,
+        outro_video: outro_video,
         total_time: total_time,
-        finish_line_lat: finish_line_lat,
-        finish_line_long: finish_line_long,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
