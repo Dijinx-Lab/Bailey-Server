@@ -20,11 +20,11 @@ router
 
 router
   .route(routesAdminSettings + "/update")
-  .post(RouteController.apiUpdateRoute);
+  .put(RouteController.apiUpdateRoute);
 
 router
   .route(routesAdminSettings + "/details")
-  .post(RouteController.apiGetRouteSettings);
+  .get(RouteController.apiGetRouteSettings);
 
 router.route(routes + "/details").get(RouteController.apiGetRoute);
 
