@@ -127,9 +127,11 @@ export default class ChallengeService {
           ["created_on", "deleted_on"]
         );
 
-        const existingRoute = await RouteDAO.getRouteByIDFromDB(existingChallenge.route);
+        // const existingRoute = await RouteDAO.getRouteByIDFromDB(
+        //   existingChallenge.route
+        // );
 
-        for (let i = 0; i < existingQuestion.length; i++){
+        for (let i = 0; i < existingQuestion.length; i++) {
           const filteredQuestion = PatternUtil.filterParametersFromObject(
             existingQuestion[i],
             ["created_on", "deleted_on"]
@@ -138,10 +140,9 @@ export default class ChallengeService {
           existingQuestion[i] = filteredQuestion;
         }
 
-        filteredChallenge.total_questions = existingQuestion.length;
-        filteredChallenge.intro_video = existingRoute.intro_video;
+        filteredChallenge.intro_url = existingChallenge.intro_url;
 
-        return {challenge: filteredChallenge, question: existingQuestion};
+        return { challenge: filteredChallenge, question: existingQuestion };
       }
     } catch (e) {
       return e.message;
