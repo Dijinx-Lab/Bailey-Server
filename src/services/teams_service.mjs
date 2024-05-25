@@ -23,7 +23,7 @@ export default class TeamService {
 
   static async addTeam(name) {
     try {
-      const alrTeam = await TeamDAO.getTeamByTeamCode(team_code);
+      const alrTeam = await TeamDAO.getTeamByTeamName(name);
       if (alrTeam) {
         return "A team with this name already exists. Please try a more unique name";
       }
