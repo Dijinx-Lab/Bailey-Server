@@ -1,5 +1,5 @@
 import AwsUtil from "../utility/aws_util.mjs";
-import { fs } from "fs";
+import fs from "fs";
 import { resolve } from "path";
 
 const privacyPath = resolve(
