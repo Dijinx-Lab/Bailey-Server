@@ -35,7 +35,7 @@ export default class UtilService {
       }
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
 
-      await fs.writeFile(filePath, newContent, "utf8");
+      fs.writeFile(filePath, newContent, "utf8");
       return {};
     } catch (e) {
       return `Error while editing: ${e}`;
@@ -46,7 +46,7 @@ export default class UtilService {
     try {
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
 
-      const content = fs.readFile(filePath, "utf8");
+      const content = fs.readFile(filePath, { encoding: "utf-8" });
       return { content };
     } catch (e) {
       return `Error while reading file: ${e}`;
