@@ -49,6 +49,16 @@ export default class TeamDAO {
     }
   }
 
+  static async getTeamByTeamName(name) {
+    try {
+      const team = await teamcon.findOne({ name: name });
+      return team;
+    } catch (e) {
+      console.error(`Unable to get team by Team Code: ${e}`);
+      return null;
+    }
+  }
+
   static async getAllTeamsFromDB(sortField = "score", sortOrder = -1) {
     try {
       let sortOptions = {};

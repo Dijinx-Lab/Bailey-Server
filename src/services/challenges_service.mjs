@@ -142,7 +142,7 @@ export default class ChallengeService {
 
         filteredChallenge.intro_url = existingChallenge.intro_url;
 
-        return { challenge: filteredChallenge, question: existingQuestion };
+        return { challenge: filteredChallenge, questions: existingQuestion };
       }
     } catch (e) {
       return e.message;
