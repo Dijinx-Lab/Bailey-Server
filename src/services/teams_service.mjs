@@ -119,17 +119,19 @@ export default class TeamService {
         if (routeTiming) {
           filteredTeam.status = routeTiming.start_time ? "ACTIVE" : "INACTIVE";
 
-          filteredTeam.route_started = new Intl.DateTimeFormat("en-GB")
-            .format(routeTiming.start_time)
-            .toString();
+          filteredTeam.route_started =
+            //  new Intl.DateTimeFormat("en-GB")
+            //   .format(
+            routeTiming.start_time;
+          //   )
+          // .toString();
 
           filteredTeam.time_taken =
             filteredTeam.status === "INACTIVE"
-              ? (
-                  (routeTiming.end_time - routeTiming.start_time) /
-                  (1000 * 60)
-                ).toFixed(2)
-              : null;
+              ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
+                  .toFixed(2)
+                  .toString()
+              : "PENDING";
         } else {
           filteredTeam.route_started = null;
           filteredTeam.time_taken = null;
