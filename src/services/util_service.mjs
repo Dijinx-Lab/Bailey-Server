@@ -46,8 +46,10 @@ export default class UtilService {
     try {
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
 
-      const content = fs.readFile(filePath, { encoding: "utf-8" });
-      return { content };
+      fs.readFile(filePath, "utf-8", (err, data) => {
+        if (err) return err;
+        return data;
+      });
     } catch (e) {
       return `Error while reading file: ${e}`;
     }
