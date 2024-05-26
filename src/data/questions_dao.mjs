@@ -37,8 +37,7 @@ export default class QuestionDAO {
       });
       return ques;
     } catch (e) {
-      console.error(`Unable to get question by ID: ${e}`);
-      return null;
+      return `Unable to get question by ID: ${e}`;
     }
   }
 
