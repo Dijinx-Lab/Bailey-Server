@@ -35,7 +35,7 @@ export default class UtilService {
       }
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
 
-      fs.writeFile(filePath, newContent, "utf8");
+      await fs.writeFile(filePath, newContent, "utf8");
       return {};
     } catch (e) {
       return `Error while editing: ${e}`;
