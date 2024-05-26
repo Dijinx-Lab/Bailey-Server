@@ -1,5 +1,5 @@
 import AwsUtil from "../utility/aws_util.mjs";
-import fs from "fs";
+import { promises as fs } from "fs";
 import { resolve } from "path";
 
 const privacyPath = resolve(
@@ -45,13 +45,10 @@ export default class UtilService {
   static async apiGetFileContent(file_type) {
     try {
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
-
-      fs.readFile(filePath, "utf-8", (err, data) => {
-        if (err) return err;
-        return data;
-      });
+      const data = await fs.readFile(filePath, "utf-8");
+      return data;
     } catch (e) {
-      return `Error while reading file: ${e}`;
+      return `Error while reading file: ${e.message}`;
     }
   }
 }
