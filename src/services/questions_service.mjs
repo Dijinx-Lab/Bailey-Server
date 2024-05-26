@@ -149,11 +149,11 @@ export default class QuestionService {
 
       existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
 
-      if (updateResult) {
-        return { question: existingChallenge };
-      } else {
-        return "Failed to update the challenge";
-      }
+      // if (updateResult) {
+      return { question: existingChallenge };
+      // } else {
+      //   return "Failed to update the challenge";
+      // }
     } catch (e) {
       return e.message;
     }
@@ -176,11 +176,11 @@ export default class QuestionService {
 
       existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
 
-      if (updateResult) {
-        return {};
-      } else {
-        return "Failed to update the challenge";
-      }
+      // if (updateResult) {
+      return {};
+      // } else {
+      //   return "Failed to update the challenge";
+      // }
     } catch (e) {
       return e.message;
     }

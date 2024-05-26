@@ -57,7 +57,7 @@ export default class QuestionDAO {
   static async updateQuestionInDB(question) {
     try {
       const updateResult = await quescon.updateOne(
-        { _id: new ObjectId(question._id), deleted_on: null },
+        { _id: new ObjectId(question._id) },
         {
           $set: challenge,
         }

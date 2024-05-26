@@ -25,7 +25,9 @@ router
   .route(quesAdminRoute + "/delete")
   .put(QuestionController.apiDeleteQuestion);
 
-router.route(quesRoute + "/details").get(QuestionController.apiGetQuestion);
+router
+  .route(quesAdminRoute + "/details")
+  .get(QuestionController.apiGetQuestion);
 
 router
   .route(quesRoute + "/details-by-challenge")
