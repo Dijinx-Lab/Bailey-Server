@@ -58,7 +58,7 @@ export default class QuestionDAO {
       const updateResult = await quescon.updateOne(
         { _id: new ObjectId(question._id) },
         {
-          $set: challenge,
+          $set: question,
         }
       );
       return true;

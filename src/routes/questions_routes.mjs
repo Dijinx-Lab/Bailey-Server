@@ -23,7 +23,7 @@ router
 
 router
   .route(quesAdminRoute + "/delete")
-  .put(QuestionController.apiDeleteQuestion);
+  .delete(QuestionController.apiDeleteQuestion);
 
 router
   .route(quesAdminRoute + "/details")
