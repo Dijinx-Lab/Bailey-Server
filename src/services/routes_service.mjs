@@ -75,6 +75,8 @@ export default class RouteService {
         existingRoute.total_time = total_time;
       }
 
+      console.log(terms_and_conditions);
+
       if (terms_and_conditions) {
         await UtilService.apiUpdateFile(terms_and_conditions, "terms");
       }
