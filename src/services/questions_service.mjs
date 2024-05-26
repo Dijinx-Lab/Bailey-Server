@@ -84,6 +84,108 @@ export default class QuestionService {
     }
   }
 
+  static async updateQuestion(
+    id,
+    score,
+    type,
+    question,
+    picture,
+    options,
+    slider_min,
+    slider_max,
+    jumbled_word,
+    challenge,
+    answer
+  ) {
+    try {
+      let existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+      if (!existingChallenge) {
+        return "No question found for this id";
+      }
+
+      if (score) {
+        existingChallenge.score = score;
+      }
+
+      if (type) {
+        existingChallenge.type = type;
+      }
+
+      if (question) {
+        existingChallenge.question = question;
+      }
+
+      if (picture) {
+        existingChallenge.picture = picture;
+      }
+
+      if (options) {
+        existingChallenge.options = options;
+      }
+
+      if (slider_min) {
+        existingChallenge.slider_min = slider_min;
+      }
+
+      if (slider_max) {
+        existingChallenge.slider_max = slider_max;
+      }
+
+      if (jumbled_word) {
+        existingChallenge.jumbled_word = jumbled_word;
+      }
+
+      if (challenge) {
+        existingChallenge.challenge = challenge;
+      }
+
+      if (answer) {
+        existingChallenge.answer = answer;
+      }
+
+      const updateResult = await QuestionDAO.updateQuestionInDB(
+        existingChallenge
+      );
+
+      existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+
+      if (updateResult) {
+        return { question: existingChallenge };
+      } else {
+        return "Failed to update the challenge";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async deleteQuestion(id) {
+    try {
+      let existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+      if (!existingChallenge) {
+        return "No question found for this id";
+      }
+
+      const deletedOn = new Date();
+
+      existingChallenge.deleted_on = deletedOn;
+
+      const updateResult = await QuestionDAO.updateQuestionInDB(
+        existingChallenge
+      );
+
+      existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+
+      if (updateResult) {
+        return {};
+      } else {
+        return "Failed to update the challenge";
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
   static async getQuestionByID(quesId) {
     try {
       const existingQues = await QuestionDAO.getQuestionByIDFromDB(quesId);

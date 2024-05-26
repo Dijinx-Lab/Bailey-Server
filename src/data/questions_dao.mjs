@@ -31,7 +31,10 @@ export default class QuestionDAO {
 
   static async getQuestionByIDFromDB(id) {
     try {
-      const ques = await quescon.findOne({ _id: new ObjectId(id) });
+      const ques = await quescon.findOne({
+        _id: new ObjectId(id),
+        deleted_on: null,
+      });
       return ques;
     } catch (e) {
       console.error(`Unable to get question by ID: ${e}`);
@@ -41,10 +44,27 @@ export default class QuestionDAO {
 
   static async getQuestionsByChallengeFromDB(challenge) {
     try {
-      const ques = await quescon.find({ challenge: new ObjectId(challenge) }).toArray();
+      const ques = await quescon
+        .find({ challenge: new ObjectId(challenge), deleted_on: null })
+        .toArray();
       return ques;
     } catch (e) {
       console.error(`Unable to get questions by challenge: ${e}`);
+      return null;
+    }
+  }
+
+  static async updateQuestionInDB(question) {
+    try {
+      const updateResult = await quescon.updateOne(
+        { _id: new ObjectId(question._id), deleted_on: null },
+        {
+          $set: challenge,
+        }
+      );
+      return true;
+    } catch (e) {
+      console.error(`Unable to get challenge by ID: ${e}`);
       return null;
     }
   }

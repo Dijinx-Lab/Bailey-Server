@@ -17,6 +17,14 @@ router
     QuestionController.apiCreateQuestion
   );
 
+router
+  .route(quesAdminRoute + "/update")
+  .put(QuestionController.apiUpdateQuestion);
+
+router
+  .route(quesAdminRoute + "/delete")
+  .put(QuestionController.apiDeleteQuestion);
+
 router.route(quesRoute + "/details").get(QuestionController.apiGetQuestion);
 
 router
