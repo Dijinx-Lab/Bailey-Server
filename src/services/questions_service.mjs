@@ -53,7 +53,7 @@ export default class QuestionService {
         jumbled_word,
       ].map((field) => (field === undefined ? null : field));
 
-      await ChallengeService.updateChallengeStats(challenge, score);
+      await ChallengeService.updateChallengeStats("add", challenge, score);
 
       const quesDocument = {
         score: score,
@@ -147,6 +147,14 @@ export default class QuestionService {
         existingChallenge
       );
 
+      if (score) {
+        await ChallengeService.updateChallengeStats(
+          "update",
+          existingChallenge.challenge,
+          score
+        );
+      }
+
       existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
 
       // if (updateResult) {
@@ -174,13 +182,13 @@ export default class QuestionService {
         existingChallenge
       );
 
-      // existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+      await ChallengeService.updateChallengeStats(
+        "delete",
+        existingChallenge.challenge,
+        existingChallenge.score
+      );
 
-      // if (updateResult) {
       return {};
-      // } else {
-      //   return "Failed to update the challenge";
-      // }
     } catch (e) {
       return e.message;
     }

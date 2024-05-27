@@ -276,17 +276,29 @@ export default class ChallengeService {
     }
   }
 
-  static async updateChallengeStats(id, total_score) {
+  static async updateChallengeStats(action, id, total_score) {
     try {
       const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
       if (!existingChallenge) {
         return "No challenge found for this id";
       }
 
-      existingChallenge.questions += 1;
+      if (action === "add") {
+        existingChallenge.questions += 1;
 
-      if (total_score) {
-        existingChallenge.total_score += total_score;
+        if (total_score) {
+          existingChallenge.total_score += total_score;
+        }
+      } else if (action === "update") {
+        if (total_score) {
+          existingChallenge.total_score += total_score;
+        }
+      } else if (action === "delete") {
+        existingChallenge.questions -= 1;
+
+        if (total_score) {
+          existingChallenge.total_score -= total_score;
+        }
       }
 
       const updateResult = await ChallengeDAO.updateChallengeInDB(
