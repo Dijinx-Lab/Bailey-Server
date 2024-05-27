@@ -6,6 +6,7 @@ import RouteDAO from "../data/routes_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TeamDAO from "../data/team_dao.mjs";
+import QuestionService from "./questions_service.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {
@@ -127,10 +128,6 @@ export default class ChallengeService {
           ["created_on", "deleted_on"]
         );
 
-        // const existingRoute = await RouteDAO.getRouteByIDFromDB(
-        //   existingChallenge.route
-        // );
-
         for (let i = 0; i < existingQuestion.length; i++) {
           const filteredQuestion = PatternUtil.filterParametersFromObject(
             existingQuestion[i],
@@ -143,6 +140,36 @@ export default class ChallengeService {
         filteredChallenge.intro_url = existingChallenge.intro_url;
 
         return { challenge: filteredChallenge, questions: existingQuestion };
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async deleteChallenge(chalId) {
+    try {
+      const [existingChallenge, existingQuestion] = await Promise.all([
+        ChallengeDAO.getChallengeByIDFromDB(chalId),
+        QuestionDAO.getQuestionsByChallengeFromDB(chalId),
+      ]);
+      if (!existingChallenge) {
+        return "No challenge found for this ID";
+      } else {
+        const deletePromises = existingQuestion.map((question) =>
+          QuestionService.deleteQuestion(question._id)
+        );
+        console.log(existingQuestion);
+        await Promise.all(deletePromises);
+
+        const deletedOn = new Date();
+
+        existingChallenge.deleted_on = deletedOn;
+
+        const updateResult = await ChallengeDAO.updateChallengeInDB(
+          existingChallenge
+        );
+
+        return {};
       }
     } catch (e) {
       return e.message;
@@ -354,29 +381,6 @@ export default class ChallengeService {
           uncompleted_challenges: uncompleted_challenges,
           challenges: existingChallenge,
         };
-      }
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-  static async deleteChallenge(id) {
-    try {
-      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(id);
-      if (!existingChallenge) {
-        return "No challenge found for this id";
-      }
-
-      existingChallenge.deleted_on = new Date();
-
-      const updateResult = await ChallengeDAO.updateChallengeInDB(
-        existingChallenge
-      );
-
-      if (updateResult) {
-        return {};
-      } else {
-        return "Failed to delete the challenge";
       }
     } catch (e) {
       return e.message;

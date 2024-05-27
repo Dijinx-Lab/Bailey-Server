@@ -174,7 +174,7 @@ export default class QuestionService {
         existingChallenge
       );
 
-      existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
+      // existingChallenge = await QuestionDAO.getQuestionByIDFromDB(id);
 
       // if (updateResult) {
       return {};

@@ -33,7 +33,10 @@ export default class ChallengeDAO {
 
   static async getChallengeByIDFromDB(id) {
     try {
-      const challenge = await challengecon.findOne({ _id: new ObjectId(id) });
+      const challenge = await challengecon.findOne({
+        _id: new ObjectId(id),
+        deleted_on: null,
+      });
       return challenge;
     } catch (e) {
       console.error(`Unable to get challenge by ID: ${e}`);

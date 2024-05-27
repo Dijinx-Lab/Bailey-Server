@@ -28,6 +28,10 @@ router
   .get(ChallengeController.apiGetChallengeForAdmin);
 
 router
+  .route(chalAdminRoute + "/delete")
+  .delete(ChallengeController.apiDeleteChallenge);
+
+router
   .route(chalRoute + "/details-by-route")
   .get(ChallengeController.apiGetChallengesByRoute);
 

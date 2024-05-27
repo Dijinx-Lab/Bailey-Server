@@ -63,7 +63,9 @@ export default class ChallengeController {
   static async apiGetChallengeForAdmin(req, res, next) {
     try {
       const _id = req.query.id;
-      const serviceResponse = await ChallengeService.getChallengeByIDForAdmin(_id);
+      const serviceResponse = await ChallengeService.getChallengeByIDForAdmin(
+        _id
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -73,6 +75,26 @@ export default class ChallengeController {
           success: true,
           data: serviceResponse,
           message: "Challenge details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiDeleteChallenge(req, res, next) {
+    try {
+      const _id = req.query.id;
+      const serviceResponse = await ChallengeService.deleteChallenge(_id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Challenge and its questions deleted successfully",
         });
       }
     } catch (e) {
@@ -128,8 +150,7 @@ export default class ChallengeController {
 
   static async apiGetAllChallengeDetails(req, res, next) {
     try {
-      const serviceResponse = await ChallengeService.getAllChallengeDetails(
-      );
+      const serviceResponse = await ChallengeService.getAllChallengeDetails();
       if (typeof serviceResponse === "string") {
         res
           .status(200)
