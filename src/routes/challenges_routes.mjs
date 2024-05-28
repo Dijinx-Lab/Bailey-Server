@@ -27,9 +27,6 @@ router
   .route(chalAdminRoute + "/details")
   .get(ChallengeController.apiGetChallengeForAdmin);
 
-  router
-    .route(chalAdminRoute + "/dashboard-chart")
-    .get(ChallengeController.apiGetChallengesChart);
 
 router
   .route(chalAdminRoute + "/delete")

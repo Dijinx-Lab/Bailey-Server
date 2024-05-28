@@ -11,6 +11,7 @@ import FirebaseUtility from "../utility/fcm_utility.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import TimingDAO from "../data/timing_dao.mjs";
+import TimingService from "./timing_service.mjs";
 
 export default class TeamService {
   static async connectDatabase(client) {
@@ -343,5 +344,230 @@ export default class TeamService {
     } catch (e) {
       return e.message;
     }
+  }
+
+  static async getTeamsActiveChartData(filter) {
+    try {
+      let keys;
+      switch (filter) {
+        case "monthly":
+          keys = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          break;
+        case "weekly":
+          keys = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+          break;
+        case "daily":
+          keys = Array.from({ length: 24 }, (_, i) =>
+            i.toString().padStart(2, "0")
+          );
+          break;
+        default:
+          throw new Error(`Unsupported filter: ${filter}`);
+      }
+
+      const monthCounts = Object.fromEntries(keys.map((key) => [key, 0]));
+
+      const existingTeams = await TeamDAO.getAllTeamsFromDB();
+
+      const routesCompletedPromises = existingTeams.map(async (team) => {
+        try {
+          const timings = await TimingService.getTeamTimings(team.team_code);
+          return timings;
+        } catch (e) {
+          console.error(
+            `Error fetching timings for team ${team.team_code}: ${e.message}`
+          );
+          return null; // Handle error by returning null
+        }
+      });
+
+      let routesCompletedResults = await Promise.all(routesCompletedPromises);
+      routesCompletedResults = routesCompletedResults.filter(
+        (result) => result !== null
+      );
+
+      const currentDate = new Date();
+
+      routesCompletedResults.forEach((result) => {
+        const timings = result.timings;
+        if (timings && timings.start_time) {
+          const startDateTime = new Date(timings.start_time);
+          switch (filter) {
+            case "monthly":
+              if (startDateTime.getFullYear() === currentDate.getFullYear()) {
+                const startMonth = startDateTime.getMonth();
+                const monthKey = keys[startMonth];
+                monthCounts[monthKey]++;
+              }
+              break;
+            case "weekly":
+              if (
+                startDateTime.getFullYear() === currentDate.getFullYear() &&
+                this.getWeek(startDateTime) === this.getWeek(currentDate)
+              ) {
+                const startDayOfWeek = startDateTime.getDay();
+                const dayKey = keys[startDayOfWeek];
+                monthCounts[dayKey]++;
+              }
+
+              break;
+            case "daily":
+              if (
+                startDateTime.getFullYear() === currentDate.getFullYear() &&
+                startDateTime.getMonth() === currentDate.getMonth() &&
+                startDateTime.getDate() === currentDate.getDate()
+              ) {
+                const startHour = startDateTime.getHours();
+                const hourKey = keys[startHour];
+                monthCounts[hourKey]++;
+              }
+              break;
+          }
+        } else {
+          console.warn("Unexpected timings format:", timings);
+        }
+      });
+
+      const data = keys.map((key) => monthCounts[key]);
+
+      return {
+        filter: filter,
+        chart_min: Math.min(...data),
+        chart_max: Math.max(...data),
+        keys: keys,
+        data: data,
+        mapped_data: monthCounts,
+      };
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getTeamsChallengesChartData(filter) {
+    try {
+      let keys;
+      switch (filter) {
+        case "monthly":
+          keys = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          break;
+        case "weekly":
+          keys = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+          break;
+        case "daily":
+          keys = Array.from({ length: 24 }, (_, i) =>
+            i.toString().padStart(2, "0")
+          );
+          break;
+        default:
+          throw new Error(`Unsupported filter: ${filter}`);
+      }
+
+      const counts = Object.fromEntries(keys.map((key) => [key, 0]));
+
+      let existingTeams = await TeamDAO.getAllTeamsFromDB();
+
+      const routesCompletedPromises = existingTeams.map(async (team) => {
+        try {
+          const timings = await TimingService.getTeamTimings(team.team_code);
+          return { team, timings };
+        } catch (e) {
+          console.error(
+            `Error fetching timings for team ${team.team_code}: ${e.message}`
+          );
+          return null;
+        }
+      });
+
+      let routesCompletedResults = await Promise.all(routesCompletedPromises);
+
+      routesCompletedResults = routesCompletedResults.filter(
+        (result) =>
+          result !== null && result.timings && result.timings.timings.start_time
+      );
+
+      const currentDate = new Date();
+
+      routesCompletedResults.forEach((result) => {
+        const { team, timings } = result;
+        const startDateTime = new Date(timings.timings.start_time);
+        let key = null;
+
+        switch (filter) {
+          case "monthly":
+            if (startDateTime.getFullYear() === currentDate.getFullYear()) {
+              key = keys[startDateTime.getMonth()];
+            }
+            break;
+          case "weekly":
+            if (
+              startDateTime.getFullYear() === currentDate.getFullYear() &&
+              this.getWeek(startDateTime) === this.getWeek(currentDate)
+            ) {
+              key = keys[startDateTime.getDay()];
+            }
+            break;
+          case "daily":
+            if (
+              startDateTime.getFullYear() === currentDate.getFullYear() &&
+              startDateTime.getMonth() === currentDate.getMonth() &&
+              startDateTime.getDate() === currentDate.getDate()
+            ) {
+              key = keys[startDateTime.getHours()];
+            }
+            break;
+        }
+
+        if (key) {
+          counts[key] += team.completed_challenges.length;
+        }
+      });
+
+      const data = keys.map((key) => counts[key]);
+
+      return {
+        filter: filter,
+        chart_min: Math.min(...data),
+        chart_max: Math.max(...data),
+        keys: keys,
+        data: data,
+        mapped_data: counts,
+      };
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static getWeek(date) {
+    const onejan = new Date(date.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(
+      ((date - onejan) / 86400000 + onejan.getDay() + 1) / 7
+    );
+    return weekNumber;
   }
 }

@@ -40,4 +40,12 @@ router
   .route(teamAdminRoutes + "/dashboard-summary")
   .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdminDashboard);
 
+router
+  .route(teamAdminRoutes + "/chart/teams-joined")
+  .get(TeamController.apiGetTeamsActiveChart);
+
+router
+  .route(teamAdminRoutes + "/chart/challenges-completed")
+  .get(TeamController.apiGetTeamsChallengedChart);
+
 export default router;

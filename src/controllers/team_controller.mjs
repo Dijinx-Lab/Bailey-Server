@@ -204,4 +204,46 @@ export default class TeamController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiGetTeamsActiveChart(req, res, next) {
+    try {
+      const filter = req.query.filter;
+      const serviceResponse = await TeamService.getTeamsActiveChartData(filter);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Chart details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiGetTeamsChallengedChart(req, res, next) {
+    try {
+      const filter = req.query.filter;
+      const serviceResponse = await TeamService.getTeamsChallengesChartData(
+        filter
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Chart details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
 }
