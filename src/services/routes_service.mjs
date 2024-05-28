@@ -72,8 +72,11 @@ export default class RouteService {
       if (!existingRoute) {
         return "No route found for this ID";
       }
+
+      console.log(outro_message);
       if (outro_message) {
         existingRoute.outro_message = outro_message;
+        console.log(existingRoute);
       }
       if (intro_message) {
         existingRoute.intro_message = intro_message;
@@ -124,7 +127,6 @@ export default class RouteService {
       } else {
         const settings = {
           intro_message: existingRoute.intro_message,
-
           intro_video: existingRoute.intro_video,
           outro_message: existingRoute.outro_message,
           outro_video: existingRoute.outro_video,
