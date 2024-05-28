@@ -43,6 +43,19 @@ export default class TimingDAO {
     }
   }
 
+  static async getTimingByTeamCodeFromDB(teamCode) {
+    try {
+      const user = await timingcon.findOne({
+        team_code: teamCode,
+      });
+
+      return user;
+    } catch (e) {
+      console.error(`Unable to get user by ID: ${e}`);
+      return null;
+    }
+  }
+
   static async updateTimingInDB(timing) {
     try {
       const updateResult = await timingcon.updateOne(

@@ -7,6 +7,7 @@ import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import QuestionService from "./questions_service.mjs";
+import TimingService from "./timing_service.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {
@@ -87,32 +88,32 @@ export default class ChallengeService {
     }
   }
 
-  static async getChallengeByID(chalId) {
-    try {
-      const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(
-        chalId
-      );
-      if (!existingChallenge) {
-        return "No challenge found for this ID";
-      } else {
-        if (existingChallenge.route != null) {
-          const chalResponse = await RouteService.getRouteByID(
-            existingChallenge.route
-          );
-          if (typeof chalResponse !== "string") {
-            existingChallenge.route = chalResponse;
-          }
-        }
-        const filteredChallenge = PatternUtil.filterParametersFromObject(
-          existingChallenge,
-          ["created_on", "deleted_on"]
-        );
-        return filteredChallenge;
-      }
-    } catch (e) {
-      return e.message;
-    }
-  }
+  // static async getChallengeByID(chalId) {
+  //   try {
+  //     const existingChallenge = await ChallengeDAO.getChallengeByIDFromDB(
+  //       chalId
+  //     );
+  //     if (!existingChallenge) {
+  //       return "No challenge found for this ID";
+  //     } else {
+  //       if (existingChallenge.route != null) {
+  //         const chalResponse = await RouteService.getRouteByID(
+  //           existingChallenge.route
+  //         );
+  //         if (typeof chalResponse !== "string") {
+  //           existingChallenge.route = chalResponse;
+  //         }
+  //       }
+  //       const filteredChallenge = PatternUtil.filterParametersFromObject(
+  //         existingChallenge,
+  //         ["created_on", "deleted_on"]
+  //       );
+  //       return filteredChallenge;
+  //     }
+  //   } catch (e) {
+  //     return e.message;
+  //   }
+  // }
 
   static async getChallengeByIDForAdmin(chalId) {
     try {
@@ -397,5 +398,124 @@ export default class ChallengeService {
     } catch (e) {
       return e.message;
     }
+  }
+
+  static async getChallengesChartData(filter) {
+    try {
+      let keys;
+      switch (filter) {
+        case "monthly":
+          keys = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          break;
+        case "weekly":
+          keys = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+          break;
+        case "daily":
+          keys = Array.from({ length: 24 }, (_, i) =>
+            i.toString().padStart(2, "0")
+          );
+          break;
+        default:
+          throw new Error(`Unsupported filter: ${filter}`);
+      }
+
+      const monthCounts = Object.fromEntries(keys.map((key) => [key, 0]));
+
+      const existingTeams = await TeamDAO.getAllTeamsFromDB();
+
+      const routesCompletedPromises = existingTeams.map(async (team) => {
+        try {
+          const timings = await TimingService.getTeamTimings(team.team_code);
+          return timings;
+        } catch (e) {
+          console.error(
+            `Error fetching timings for team ${team.team_code}: ${e.message}`
+          );
+          return null; // Handle error by returning null
+        }
+      });
+
+      let routesCompletedResults = await Promise.all(routesCompletedPromises);
+      routesCompletedResults = routesCompletedResults.filter(
+        (result) => result !== null
+      );
+
+      const currentDate = new Date();
+
+      routesCompletedResults.forEach((result) => {
+        const timings = result.timings;
+        if (timings && timings.start_time) {
+          const startDateTime = new Date(timings.start_time);
+          switch (filter) {
+            case "monthly":
+              if (startDateTime.getFullYear() === currentDate.getFullYear()) {
+                const startMonth = startDateTime.getMonth();
+                const monthKey = keys[startMonth];
+                monthCounts[monthKey]++;
+              }
+              break;
+            case "weekly":
+              if (
+                startDateTime.getFullYear() === currentDate.getFullYear() &&
+                this.getWeek(startDateTime) === this.getWeek(currentDate)
+              ) {
+                const startDayOfWeek = startDateTime.getDay();
+                const dayKey = keys[startDayOfWeek];
+                monthCounts[dayKey]++;
+              }
+
+              break;
+            case "daily":
+              if (
+                startDateTime.getFullYear() === currentDate.getFullYear() &&
+                startDateTime.getMonth() === currentDate.getMonth() &&
+                startDateTime.getDate() === currentDate.getDate()
+              ) {
+                const startHour = startDateTime.getHours();
+                const hourKey = keys[startHour];
+                monthCounts[hourKey]++;
+              }
+              break;
+          }
+        } else {
+          console.warn("Unexpected timings format:", timings);
+        }
+      });
+
+      const data = keys.map((key) => monthCounts[key]);
+
+      return {
+        filter: filter,
+        chart_min: Math.min(...data),
+        chart_max: Math.max(...data),
+        keys: keys,
+        data: data,
+        mapped_data: monthCounts,
+        
+      };
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static getWeek(date) {
+    const onejan = new Date(date.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(
+      ((date - onejan) / 86400000 + onejan.getDay() + 1) / 7
+    );
+    return weekNumber;
   }
 }

@@ -167,6 +167,28 @@ export default class ChallengeController {
     }
   }
 
+  static async apiGetChallengesChart(req, res, next) {
+    try {
+      const filter = req.query.filter;
+      const serviceResponse = await ChallengeService.getChallengesChartData(
+        filter
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Chart details fetched successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
   static async apiUpdateChallenge(req, res, next) {
     try {
       const id = req.query.id;

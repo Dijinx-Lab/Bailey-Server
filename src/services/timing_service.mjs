@@ -128,4 +128,24 @@ export default class TimingService {
       return e.message;
     }
   }
+
+  static async getTeamTimings(teamCode) {
+    try {
+      const existingTiming = await TimingDAO.getTimingByTeamCodeFromDB(
+        teamCode
+      );
+
+      if (!existingTiming) {
+        return null;
+      } else {
+        let timings = {
+          start_time: existingTiming.start_time,
+          end_time: existingTiming.end_time,
+        };
+        return { timings };
+      }
+    } catch (e) {
+      return null;
+    }
+  }
 }
