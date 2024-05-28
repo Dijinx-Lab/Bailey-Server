@@ -73,10 +73,8 @@ export default class RouteService {
         return "No route found for this ID";
       }
 
-      console.log(outro_message);
       if (outro_message) {
         existingRoute.outro_message = outro_message;
-        console.log(existingRoute);
       }
       if (intro_message) {
         existingRoute.intro_message = intro_message;
@@ -93,8 +91,6 @@ export default class RouteService {
         existingRoute.total_time = total_time;
       }
 
-      console.log(terms_and_conditions);
-
       if (terms_and_conditions) {
         await UtilService.apiUpdateFile(terms_and_conditions, "terms");
       }
@@ -103,7 +99,13 @@ export default class RouteService {
         await UtilService.apiUpdateFile(privacy_policy, "privacy");
       }
 
-      if (intro_video || outro_video || total_time) {
+      if (
+        intro_video ||
+        outro_video ||
+        total_time ||
+        outro_message ||
+        intro_message
+      ) {
         const updateResult = await RouteDAO.updateRouteInDB(existingRoute);
       }
 
