@@ -28,7 +28,7 @@ router
 
 router.route(routes + "/details").get(RouteController.apiGetRoute);
 
-router.route(routesAdmin + "/all-details").get(RouteController.apiGetAllRoutes);
+router.route(routes + "/all-details").get(RouteController.apiGetAllRoutes);
 
 router.route(routes + "/start").post(RouteController.apiSetStartTime);
 
