@@ -6,9 +6,17 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class RouteController {
   static async apiCreateRoute(req, res, next) {
     try {
-      const { intro_video, outro_video, total_time } = req.body;
+      const {
+        intro_message,
+        outro_message,
+        intro_video,
+        outro_video,
+        total_time,
+      } = req.body;
 
       const serviceResponse = await RouteService.addRoute(
+        intro_message,
+        outro_message,
         intro_video,
         outro_video,
         total_time
@@ -33,6 +41,8 @@ export default class RouteController {
     try {
       const _id = req.query.id;
       const {
+        intro_message,
+        outro_message,
         intro_video,
         outro_video,
         total_time,
@@ -42,6 +52,8 @@ export default class RouteController {
 
       const serviceResponse = await RouteService.updateRouteDetails(
         _id,
+        intro_message,
+        outro_message,
         intro_video,
         outro_video,
         total_time,

@@ -22,12 +22,20 @@ export default class RouteService {
     }
   }
 
-  static async addRoute(intro_video, outro_video, total_time) {
+  static async addRoute(
+    intro_message,
+    outro_message,
+    intro_video,
+    outro_video,
+    total_time
+  ) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
 
       const routeDocument = {
+        intro_message: intro_message,
+        outro_message: outro_message,
         intro_video: intro_video,
         outro_video: outro_video,
         total_time: total_time,
@@ -51,6 +59,8 @@ export default class RouteService {
 
   static async updateRouteDetails(
     routeId,
+    intro_message,
+    outro_message,
     intro_video,
     outro_video,
     total_time,
@@ -62,7 +72,12 @@ export default class RouteService {
       if (!existingRoute) {
         return "No route found for this ID";
       }
-
+      if (outro_message) {
+        existingRoute.outro_message = outro_message;
+      }
+      if (intro_message) {
+        existingRoute.intro_message = intro_message;
+      }
       if (intro_video) {
         existingRoute.intro_video = intro_video;
       }
