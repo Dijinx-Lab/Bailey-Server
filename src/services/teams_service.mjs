@@ -442,11 +442,15 @@ export default class TeamService {
       });
 
       const data = keys.map((key) => monthCounts[key]);
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const scale = this.generateYAxisLabels(min, max);
 
       return {
         filter: filter,
-        chart_min: Math.min(...data),
-        chart_max: Math.max(...data),
+        chart_min: min,
+        chart_max: max,
+        scale: scale,
         keys: keys,
         data: data,
         mapped_data: monthCounts,
@@ -550,10 +554,15 @@ export default class TeamService {
 
       const data = keys.map((key) => counts[key]);
 
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const scale = this.generateYAxisLabels(min, max);
+
       return {
         filter: filter,
-        chart_min: Math.min(...data),
-        chart_max: Math.max(...data),
+        chart_min: min,
+        chart_max: max,
+        scale: scale,
         keys: keys,
         data: data,
         mapped_data: counts,
@@ -561,6 +570,30 @@ export default class TeamService {
     } catch (e) {
       return e.message;
     }
+  }
+
+  static generateYAxisLabels(min, max) {
+    const range = max - min;
+    let interval;
+    if (range <= 10) {
+      interval = 2;
+    } else if (range <= 50) {
+      interval = 10;
+    } else if (range <= 100) {
+      interval = 15;
+    } else if (range <= 500) {
+      interval = 100;
+    } else if (range <= 1000) {
+      interval = 200;
+    } else {
+      interval = 500;
+    }
+
+    const labels = [];
+    for (let i = 0; i <= max + interval; i += interval) {
+      labels.push(i);
+    }
+    return labels;
   }
 
   static getWeek(date) {
