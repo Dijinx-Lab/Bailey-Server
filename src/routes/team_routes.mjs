@@ -22,8 +22,6 @@ router
 
 router.route(teamRoutes + "/update").post(TeamController.apiUpdateTeam);
 
-router.route(teamRoutes + "/delete").delete(TeamController.apiDeleteTeam);
-
 router.route(teamRoutes + "/leaderboard").get(TeamController.apiGetAllTeams);
 
 router
@@ -49,5 +47,7 @@ router
 router
   .route(teamAdminRoutes + "/chart/challenges-completed")
   .get(TeamController.apiGetTeamsChallengedChart);
+
+router.route(teamAdminRoutes + "/delete").delete(TeamController.apiDeleteTeam);
 
 export default router;
