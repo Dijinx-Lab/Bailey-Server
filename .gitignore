@@ -74,6 +74,8 @@ web_modules/
 
 # dotenv environment variable files
 keys/
+res/privacy_policy.html
+res/terms_and_conditions.html
 .env
 .env.development.local
 .env.test.local
