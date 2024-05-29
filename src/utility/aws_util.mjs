@@ -1,5 +1,5 @@
 import AWS from "aws-sdk";
-import { Readable } from "stream";
+import path from "path";
 import keyConfig from "../config/key_config.mjs";
 
 class AwsUtil {
@@ -19,25 +19,24 @@ class AwsUtil {
       throw new Error("S3 is not initialized. Call initialize() method first.");
     }
 
-    const key = folder ? `${folder}/${filename}` : filename;
+    const ext = path.extname(file.originalname);
+    const key = folder ? `${folder}/${filename}${ext}` : `${filename}${ext}`;
 
     const params = {
       Bucket: keyConfig.aws.bucketName,
-      Key: `${key}.png`,
+      Key: `${key}`,
       Body: file.buffer,
       ContentType: file.mimeType,
     };
-
-    try {
-      const data = await AwsUtil.s3.upload(params).promise();
-      if (data) {
-        return `${keyConfig.aws.cloudfrontUrl}${data.key}`;
-      } else {
-        return null;
-      }
-    } catch (err) {
-      throw err;
-    }
+    return new Promise((resolve, reject) => {
+      AwsUtil.s3.upload(params, function (err, data) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(`${keyConfig.aws.cloudfrontUrl}${data.Key}`);
+        }
+      });
+    });
   }
 }
 

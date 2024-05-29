@@ -14,6 +14,9 @@ export default class UtilService {
   static async uploadToS3(file, folder) {
     try {
       const uploadedOn = new Date();
+      // console.log(file);
+      // console.log(folder);
+      // console.log(`${uploadedOn.toISOString()}`);
       const uploadUrl = await AwsUtil.uploadToS3(
         file,
         folder,
