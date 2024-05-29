@@ -22,6 +22,8 @@ router
 
 router.route(teamRoutes + "/update").post(TeamController.apiUpdateTeam);
 
+router.route(teamRoutes + "/delete").delete(TeamController.apiDeleteTeam);
+
 router.route(teamRoutes + "/leaderboard").get(TeamController.apiGetAllTeams);
 
 router

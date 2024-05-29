@@ -570,4 +570,23 @@ export default class TeamService {
     );
     return weekNumber;
   }
+
+  static async deleteTeam(id) {
+    try {
+      let existingTeam = await TeamDAO.getTeamByTeamCode(id);
+      if (!existingTeam) {
+        return "No team found for this code";
+      }
+
+      const deletedOn = new Date();
+
+      existingTeam.deleted_on = deletedOn;
+
+      const updateResult = await TeamDAO.updateTeamInDB(existingTeam);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
 }

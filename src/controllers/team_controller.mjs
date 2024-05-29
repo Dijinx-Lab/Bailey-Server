@@ -138,6 +138,27 @@ export default class TeamController {
     }
   }
 
+  static async apiDeleteTeam(req, res, next) {
+    try {
+      const team_code = req.query.code;
+
+      const serviceResponse = await TeamService.deleteTeam(team_code);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Team deleted successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
   static async apiToggleActiveChallenge(req, res, next) {
     try {
       const team_code = req.query.code;

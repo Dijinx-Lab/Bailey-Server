@@ -31,7 +31,10 @@ export default class TeamDAO {
 
   static async getTeamByIDFromDB(id) {
     try {
-      const team = await teamcon.findOne({ _id: new ObjectId(id) });
+      const team = await teamcon.findOne({
+        _id: new ObjectId(id),
+        deleted_on: null,
+      });
       return team;
     } catch (e) {
       console.error(`Unable to get team by ID: ${e}`);
@@ -41,7 +44,10 @@ export default class TeamDAO {
 
   static async getTeamByTeamCode(team_code) {
     try {
-      const team = await teamcon.findOne({ team_code: team_code });
+      const team = await teamcon.findOne({
+        team_code: team_code,
+        deleted_on: null,
+      });
       return team;
     } catch (e) {
       console.error(`Unable to get team by Team Code: ${e}`);
@@ -51,7 +57,7 @@ export default class TeamDAO {
 
   static async getTeamByTeamName(name) {
     try {
-      const team = await teamcon.findOne({ name: name });
+      const team = await teamcon.findOne({ name: name, deleted_on: null });
       return team;
     } catch (e) {
       console.error(`Unable to get team by Team Code: ${e}`);
@@ -64,7 +70,10 @@ export default class TeamDAO {
       let sortOptions = {};
       sortOptions[sortField] = sortOrder;
 
-      const team = await teamcon.find().sort(sortOptions).toArray();
+      const team = await teamcon
+        .find({ deleted_on: null })
+        .sort(sortOptions)
+        .toArray();
       return team;
     } catch (e) {
       console.error(`Unable to get all teams: ${e}`);
@@ -89,7 +98,7 @@ export default class TeamDAO {
 
   static async getAllTeamsFromDBForDashboard() {
     try {
-      const sortOptions = { created_on: -1 };
+      const sortOptions = { created_on: -1, deleted_on: null };
 
       const teams = await teamcon.find().sort(sortOptions).toArray();
       return teams;
