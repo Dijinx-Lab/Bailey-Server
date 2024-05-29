@@ -128,11 +128,19 @@ export default class RouteService {
         return "No route found for this ID";
       } else {
         const settings = {
-          intro_message: existingRoute.intro_message,
-          intro_video: existingRoute.intro_video,
-          outro_message: existingRoute.outro_message,
-          outro_video: existingRoute.outro_video,
           total_time: existingRoute.total_time,
+          video_table: [
+            {
+              title: "Welcome",
+              message: existingRoute.intro_message,
+              video: existingRoute.intro_video,
+            },
+            {
+              title: "Goodbye",
+              message: existingRoute.outro_message,
+              video: existingRoute.outro_video,
+            },
+          ],
           privacy_policy: privacyData,
           terms_and_conditions: termsData,
         };
