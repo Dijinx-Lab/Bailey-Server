@@ -59,7 +59,7 @@ export default class ChallengeDAO {
   static async getAllChallengesFromDB() {
     try {
       const challenges = await challengecon
-        .find({ deleted_on: { $eq: null } })
+        .find({ deleted_on: null })
         .toArray();
       return challenges;
     } catch (e) {

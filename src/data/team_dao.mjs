@@ -98,9 +98,12 @@ export default class TeamDAO {
 
   static async getAllTeamsFromDBForDashboard() {
     try {
-      const sortOptions = { created_on: -1, deleted_on: null };
+      const sortOptions = { created_on: -1 };
 
-      const teams = await teamcon.find().sort(sortOptions).toArray();
+      const teams = await teamcon
+        .find({ deleted_on: null })
+        .sort(sortOptions)
+        .toArray();
       return teams;
     } catch (e) {
       console.error(`Unable to get all teams: ${e}`);

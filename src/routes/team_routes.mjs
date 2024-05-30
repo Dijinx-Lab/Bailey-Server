@@ -38,7 +38,7 @@ router
 
 router
   .route(teamAdminRoutes + "/dashboard-summary")
-  .get(checkTokenMiddleware, TeamController.apiGetAllTeamsForAdminDashboard);
+  .get(TeamController.apiGetAllTeamsForAdminDashboard);
 
 router
   .route(teamAdminRoutes + "/chart/teams-joined")
