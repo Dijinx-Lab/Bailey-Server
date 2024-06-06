@@ -13,25 +13,15 @@ export default class AdminService {
     }
   }
 
-  static async addAdmin(firstname, lastname, email, password) {
+  static async addAdmin(username, password) {
     try {
-      const existingAdmin = await AdminDAO.getAdminByEmailFromDB(email);
+      const existingAdmin = await AdminDAO.getAdminByUsernameFromDB(username);
       if (existingAdmin) {
-        return "Admin with this email already exists";
+        return "Admin with this username already exists";
       }
       const passwordCheck = PatternUtil.checkPasswordLength(password);
       if (!passwordCheck) {
         return "Password's length should be greater than 8 characters";
-      }
-      const emailCheck = PatternUtil.checkEmailPattern(email);
-      if (!emailCheck) {
-        return "Please enter a valid email";
-      }
-      const nameCheck =
-        PatternUtil.checkAlphabeticName(firstname) &&
-        PatternUtil.checkAlphabeticName(lastname);
-      if (!nameCheck) {
-        return "Name can not contain numbers and special characters";
       }
 
       const hashedPassword = await AuthUtil.hashPassword(password);
@@ -39,9 +29,7 @@ export default class AdminService {
       const deletedOn = null;
 
       const adminDocument = {
-        email: email,
-        firstname: firstname,
-        lastname: lastname,
+        username: username,
         password: hashedPassword,
         role: "admin",
         created_on: createdOn,
@@ -49,7 +37,8 @@ export default class AdminService {
       };
 
       const addedAdminId = await AdminDAO.addAdminToDB(adminDocument);
-      const admin = await AdminDAO.getAdminByIDFromDB(addedAdminId);
+      let admin = await AdminDAO.getAdminByIDFromDB(addedAdminId);
+      admin.image = "https://dk9gc53q2aga2.cloudfront.net/assets/hero-icon.png";
       const filteredAdmins = PatternUtil.filterParametersFromObject(admin, [
         "_id",
         "password",
@@ -62,11 +51,11 @@ export default class AdminService {
     }
   }
 
-  static async signInAdmin(email, password) {
+  static async signInAdmin(username, password) {
     try {
-      const existingAdmin = await AdminDAO.getAdminByEmailFromDB(email);
+      const existingAdmin = await AdminDAO.getAdminByUsernameFromDB(username);
       if (!existingAdmin) {
-        return "Either your email or password is incorrect";
+        return "Either your username or password is incorrect";
       }
       const passwordCheck = await AuthUtil.comparePasswords(
         password,
@@ -79,13 +68,14 @@ export default class AdminService {
       const signedInOn = new Date();
       const tokenPayload = {
         _id: existingAdmin._id.toString(),
-        email: existingAdmin.email,
+        username: existingAdmin.username,
         role: existingAdmin.role,
         signedInOn: signedInOn,
       };
 
       const tokenString = await TokenService.createUserToken(tokenPayload);
-      const admin = await AdminDAO.getAdminByIDFromDB(existingAdmin._id);
+      let admin = await AdminDAO.getAdminByIDFromDB(existingAdmin._id);
+      admin.image = "https://dk9gc53q2aga2.cloudfront.net/assets/hero-icon.png";
       const filteredAdmins = PatternUtil.filterParametersFromObject(admin, [
         "_id",
         "password",
@@ -166,7 +156,7 @@ export default class AdminService {
       }
       const hashedPassword = await AuthUtil.hashPassword(newPassword);
       const updateResult = await AdminDAO.updateAdminPasswordInDB(
-        existingAdmin.email,
+        existingAdmin.username,
         hashedPassword
       );
 

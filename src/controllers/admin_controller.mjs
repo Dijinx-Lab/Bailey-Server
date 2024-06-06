@@ -4,12 +4,10 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class AdminController {
   static async apiCreateAdminAccount(req, res, next) {
     try {
-      const { firstname, lastname, email, password } = req.body;
+      const { username, password } = req.body;
 
       const serviceResponse = await AdminService.addAdmin(
-        firstname,
-        lastname,
-        email,
+        username,
         password
       );
       if (typeof serviceResponse === "string") {
@@ -30,11 +28,11 @@ export default class AdminController {
 
   static async apiSignInAdminAccount(req, res, next) {
     try {
-      const { email, password } = req.body;
+      const { username, password } = req.body;
 
       const serviceResponse = await AdminService.signInAdmin(
-        email,
-        password,
+        username,
+        password
       );
 
       if (typeof serviceResponse === "string") {

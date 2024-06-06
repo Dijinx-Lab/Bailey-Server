@@ -29,9 +29,9 @@ export default class AdminDAO {
     }
   }
 
-  static async getAdminByEmailFromDB(email) {
+  static async getAdminByUsernameFromDB(name) {
     try {
-      const admin = await admincon.findOne({ email: email });
+      const admin = await admincon.findOne({ username: name });
       return admin;
     } catch (e) {
       console.error(`Unable to get admin by ID: ${e}`);
