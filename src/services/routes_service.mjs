@@ -89,6 +89,7 @@ export default class RouteService {
 
       if (total_time) {
         existingRoute.total_time = Number(total_time);
+        console.log(typeof existingRoute.total_time);
         if (isNaN(existingRoute.total_time)) {
           return "Invalid value, please enter a valid number of minutes";
         }
