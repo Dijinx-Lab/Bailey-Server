@@ -39,6 +39,31 @@ export default class QuestionService {
         return "Unexpected Question Type";
       }
 
+      let numericScore = Number(score);
+      if (isNaN(numericScore)) {
+        return "Invalid score value";
+      }
+
+      let sliderMin = null;
+      let sliderMax = null;
+      let ans = answer;
+
+      if (type === "slider") {
+        sliderMin = Number(slider_min);
+        if (isNaN(sliderMin)) {
+          return "Invalid slider min value";
+        }
+
+        sliderMax = Number(slider_max);
+        if (isNaN(sliderMax)) {
+          return "Invalid slider max value";
+        }
+        ans = Number(answer);
+        if (isNaN(answer)) {
+          return "Invalid answer value";
+        }
+      }
+
       const challenge_id_new = new ObjectId(challenge);
 
       const createdOn = new Date();
@@ -56,7 +81,7 @@ export default class QuestionService {
       await ChallengeService.updateChallengeStats("add", challenge, score);
 
       const quesDocument = {
-        score: score,
+        score: numericScore,
         type: type,
         question: question,
         picture: picture,
@@ -65,7 +90,7 @@ export default class QuestionService {
         slider_max: slider_max,
         jumbled_word: jumbled_word,
         challenge: challenge_id_new,
-        answer: answer,
+        answer: ans,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
