@@ -35,7 +35,6 @@ export default class UtilService {
         return "Content is required";
       }
       const filePath = file_type === "privacy" ? privacyPath : termsPath;
-      console.log(filePath);
 
       await fs.writeFile(filePath, data, "utf8").then((e) => {
         console.log(e);
