@@ -325,7 +325,7 @@ export default class TeamService {
             existingTeam[j],
             ["created_on", "deleted_on"]
           );
-
+          filteredTeam.leaderboard = j + 1;
           existingTeam[j] = filteredTeam;
         }
 

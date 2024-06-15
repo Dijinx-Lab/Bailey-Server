@@ -14,4 +14,10 @@ router.get(utilRoute + "/privacy", (req, res) => {
   res.sendFile(filePath);
 });
 
+router.get(utilRoute + "/terms", (req, res) => {
+  const filePath =
+    "/home/ec2-user/Scavenger-Hunt-Server/res/terms_and_conditions.html";
+  res.sendFile(filePath);
+});
+
 export default router;
