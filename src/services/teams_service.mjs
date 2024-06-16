@@ -84,9 +84,10 @@ export default class TeamService {
 
         for (let j = 0; j < existingAnswer.length; j++) {
           if (existingAnswer[j].question != null) {
-            const quesResponse = await QuestionDAO.getQuestionByIDFromDB(
-              existingAnswer[j].question
-            );
+            const quesResponse =
+              await QuestionDAO.getQuestionByIDFromDBIgnoreDel(
+                existingAnswer[j].question
+              );
             if (!quesResponse) {
               continue;
             }

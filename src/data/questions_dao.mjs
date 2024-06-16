@@ -41,6 +41,18 @@ export default class QuestionDAO {
     }
   }
 
+  static async getQuestionByIDFromDBIgnoreDel(id) {
+    try {
+      const ques = await quescon.findOne({
+        _id: new ObjectId(id),
+        
+      });
+      return ques;
+    } catch (e) {
+      return `Unable to get question by ID: ${e}`;
+    }
+  }
+
   static async getQuestionsByChallengeFromDB(challenge) {
     try {
       const ques = await quescon
