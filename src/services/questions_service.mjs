@@ -46,8 +46,15 @@ export default class QuestionService {
 
       let sliderMin = null;
       let sliderMax = null;
+      let jumbledWord = null;
       let ans = answer;
 
+      if (jumbled_word) {
+        jumbledWord = Number(jumbled_word);
+        if (isNaN(jumbledWord)) {
+          return "Invalid jumble count value";
+        }
+      }
       if (type === "slider") {
         sliderMin = Number(slider_min);
         if (isNaN(sliderMin)) {
@@ -90,9 +97,9 @@ export default class QuestionService {
         question: question,
         picture: picture,
         options: options,
-        slider_min: slider_min,
-        slider_max: slider_max,
-        jumbled_word: jumbled_word,
+        slider_min: sliderMin,
+        slider_max: sliderMax,
+        jumbled_word: jumbledWord,
         challenge: challenge_id_new,
         answer: ans,
         created_on: createdOn,
