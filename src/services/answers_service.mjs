@@ -33,12 +33,11 @@ export default class AnswerService {
       const score = quesResponse.score;
       let is_correct = false;
 
-      const isPicture = quesResponse.type === "picture";
-      const isSliderAnswerMatch =
-        quesResponse.type === "slider" && quesResponse.answer === answer;
-      const isNormalAnswerMatch =
-        quesResponse.answer.toLowerCase() === answer.toLowerCase();
-      if (isPicture || isSliderAnswerMatch || isNormalAnswerMatch) {
+      if (
+        quesResponse.type === "picture" ||
+        (quesResponse.type === "slider" && quesResponse.answer === answer) ||
+        quesResponse.answer.toLowerCase() === answer.toLowerCase()
+      ) {
         const teamResponse = await TeamService.getTeamByTeamCode(team_code);
 
         if (!teamResponse) {
