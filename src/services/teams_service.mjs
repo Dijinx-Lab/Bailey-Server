@@ -74,8 +74,6 @@ export default class TeamService {
           TimingDAO.getTimingByTeamCodeFromDB(team_code),
         ]);
 
-      console.log(routeTiming);
-
       if (!existingTeam) {
         return "No team found for this code";
       } else {
@@ -115,21 +113,20 @@ export default class TeamService {
 
         if (routeTiming) {
           const isActive = routeTiming.start_time ? true : false;
-          filteredTeam.timings = routeTiming;
           filteredTeam.status = isActive ? "ACTIVE" : "INACTIVE";
 
-          console.log(filteredTeam.status);
-          console.log(isActive);
+          filteredTeam.route_started =
+            //  new Intl.DateTimeFormat("en-GB")
+            //   .format(
+            routeTiming.start_time;
+          //   )
+          // .toString();
 
-          filteredTeam.route_started = routeTiming.start_time;
-
-          const startTime = routeTiming.timings.start_time;
-          let endTime = routeTiming.timings.end_time;
-
-          filteredTeam.time_taken =
-            filteredTeam.status === "INACTIVE"
-              ? (endTime - startTime) / (1000 * 60)
-              : "PENDING";
+          filteredTeam.time_taken = isActive
+            ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
+                .toFixed(2)
+                .toString()
+            : "PENDING";
         } else {
           filteredTeam.route_started = null;
           filteredTeam.time_taken = null;
