@@ -1,10 +1,10 @@
 import { config } from "dotenv";
 
-//mount the .env file
+
 config();
 
 const databaseConfig = {
-  // Database configuration
+
   database: {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,

@@ -5,7 +5,7 @@ import TokenService from "../services/token_service.mjs";
 const secretKey = appConfig.jwt.secret;
 
 const TokenUtil = {
-  // Method to create a JWT token
+  
   createToken: (payload) => {
     try {
       const token = jwt.sign(payload, secretKey, {
@@ -17,7 +17,6 @@ const TokenUtil = {
     }
   },
 
-  // Method to check if a token exists in the database (dummy implementation)
   checkTokenStructure: (token) => {
     try {
       if (!token) {

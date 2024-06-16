@@ -1,5 +1,4 @@
 import QuestionService from "../services/questions_service.mjs";
-import TokenUtil from "../utility/token_util.mjs";
 
 export default class QuestionController {
   static async apiCreateQuestion(req, res, next) {

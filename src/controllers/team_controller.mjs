@@ -1,7 +1,5 @@
-import ChallengeService from "../services/challenges_service.mjs";
-import QuestionService from "../services/questions_service.mjs";
+
 import TeamService from "../services/teams_service.mjs";
-import TokenUtil from "../utility/token_util.mjs";
 
 export default class TeamController {
   static async apiCreateTeam(req, res, next) {

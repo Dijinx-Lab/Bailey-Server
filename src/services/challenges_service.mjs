@@ -2,12 +2,10 @@ import ChallengeDAO from "../data/challenges_dao.mjs";
 import { ObjectId } from "mongodb";
 import PatternUtil from "../utility/pattern_util.mjs";
 import RouteService from "./routes_service.mjs";
-import RouteDAO from "../data/routes_dao.mjs";
 import QuestionDAO from "../data/questions_dao.mjs";
 import AnswerDAO from "../data/answers_dao.mjs";
 import TeamDAO from "../data/team_dao.mjs";
 import QuestionService from "./questions_service.mjs";
-import TimingService from "./timing_service.mjs";
 
 export default class ChallengeService {
   static async connectDatabase(client) {

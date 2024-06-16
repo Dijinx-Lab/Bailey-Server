@@ -1,6 +1,4 @@
 import ChallengeService from "../services/challenges_service.mjs";
-import QuestionService from "../services/questions_service.mjs";
-import TokenUtil from "../utility/token_util.mjs";
 
 export default class ChallengeController {
   static async apiCreateChallenge(req, res, next) {
