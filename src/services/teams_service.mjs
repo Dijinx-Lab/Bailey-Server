@@ -115,12 +115,7 @@ export default class TeamService {
           const isActive = routeTiming.start_time ? true : false;
           filteredTeam.status = isActive ? "ACTIVE" : "INACTIVE";
 
-          filteredTeam.route_started =
-            //  new Intl.DateTimeFormat("en-GB")
-            //   .format(
-            routeTiming.start_time;
-          //   )
-          // .toString();
+          filteredTeam.route_started = routeTiming.start_time;
 
           filteredTeam.time_taken = isActive
             ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
