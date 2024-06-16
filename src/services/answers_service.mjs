@@ -33,7 +33,10 @@ export default class AnswerService {
       const score = quesResponse.score;
       let is_correct = false;
 
-      if (quesResponse.type === "picture" || quesResponse.answer == answer) {
+      if (
+        quesResponse.type === "picture" ||
+        quesResponse.answer.toLowerCase() === answer.toLowerCase()
+      ) {
         const teamResponse = await TeamService.getTeamByTeamCode(team_code);
 
         if (!teamResponse) {
@@ -140,7 +143,7 @@ export default class AnswerService {
         AnswerDAO.getAnswerByQuestionFromDB(ques._id)
       );
       const allAnswers = await Promise.all(answerPromises);
-      
+
       const answers = allAnswers.filter(
         (answer) => answer !== null && answer !== undefined
       );
