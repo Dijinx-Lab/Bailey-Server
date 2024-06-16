@@ -118,9 +118,9 @@ export default class TeamService {
           filteredTeam.route_started = routeTiming.start_time;
 
           filteredTeam.time_taken = isActive
-            ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
+            ? `${((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
                 .toFixed(2)
-                .toString()
+                .toString()} mins`
             : "PENDING";
         } else {
           filteredTeam.route_started = null;
