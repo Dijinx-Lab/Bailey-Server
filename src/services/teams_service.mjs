@@ -112,7 +112,8 @@ export default class TeamService {
         }
 
         if (routeTiming) {
-          filteredTeam.status = routeTiming.start_time ? "ACTIVE" : "INACTIVE";
+          const isActive = routeTiming.start_time ? true : false;
+          filteredTeam.status = isActive ? "ACTIVE" : "INACTIVE";
 
           filteredTeam.route_started =
             //  new Intl.DateTimeFormat("en-GB")
@@ -120,12 +121,13 @@ export default class TeamService {
             routeTiming.start_time;
           //   )
           // .toString();
+          console.log(routeTiming);
+          const startTime = routeTiming.timings.start_time;
+          let endTime = routeTiming.timings.end_time;
 
           filteredTeam.time_taken =
             filteredTeam.status === "INACTIVE"
-              ? ((routeTiming.end_time - routeTiming.start_time) / (1000 * 60))
-                  .toFixed(2)
-                  .toString()
+              ? (endTime - startTime) / (1000 * 60)
               : "PENDING";
         } else {
           filteredTeam.route_started = null;
