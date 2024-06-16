@@ -1,6 +1,4 @@
-
 import RouteService from "../services/routes_service.mjs";
-
 
 export default class RouteController {
   static async apiCreateRoute(req, res, next) {
@@ -67,7 +65,7 @@ export default class RouteController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Route updated successfully",
+          message: "Updated successfully",
         });
       }
     } catch (e) {
