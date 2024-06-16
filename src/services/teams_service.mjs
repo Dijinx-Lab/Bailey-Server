@@ -74,6 +74,8 @@ export default class TeamService {
           TimingDAO.getTimingByTeamCodeFromDB(team_code),
         ]);
 
+      console.log(routeTiming);
+
       if (!existingTeam) {
         return "No team found for this code";
       } else {
