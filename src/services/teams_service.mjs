@@ -111,10 +111,9 @@ export default class TeamService {
           filteredTeam.leaderboard = index + 1;
         }
 
-        console.log(routeTiming);
-
         if (routeTiming) {
           const isActive = routeTiming.start_time ? true : false;
+          filteredTeam.timings = routeTiming;
           filteredTeam.status = isActive ? "ACTIVE" : "INACTIVE";
 
           console.log(filteredTeam.status);
