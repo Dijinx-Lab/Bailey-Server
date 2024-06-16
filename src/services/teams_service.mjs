@@ -87,6 +87,9 @@ export default class TeamService {
             const quesResponse = await QuestionDAO.getQuestionByIDFromDB(
               existingAnswer[j].question
             );
+            if (!quesResponse) {
+              continue;
+            }
             if (typeof quesResponse !== "string") {
               existingAnswer[j].question = quesResponse.question;
               // existingAnswer[j].points = quesResponse.score;
