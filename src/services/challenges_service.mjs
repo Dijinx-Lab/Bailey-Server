@@ -372,7 +372,8 @@ export default class ChallengeService {
       const completed_challenges = existingTeam.reduce((total, team) => {
         return total + team.completed_challenges.length;
       }, 0);
-      const uncompleted_challenges = total_challenges - completed_challenges;
+      const uncompleted_challenges =
+        total_challenges === 0 ? 0 : total_challenges - completed_challenges;
 
       if (!existingChallenge) {
         return "No challenge found";
