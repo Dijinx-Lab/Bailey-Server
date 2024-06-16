@@ -71,16 +71,16 @@ export default class TimingDAO {
     }
   }
 
-  static async getTimingByTeamCodeFromDB(teamCode) {
-    try {
-      const user = await timingcon.findOne({
-        team_code: teamCode,
-      });
+  // static async getTimingByTeamCodeFromDB(teamCode) {
+  //   try {
+  //     const user = await timingcon.findOne({
+  //       team_code: teamCode,
+  //     });
 
-      return user;
-    } catch (e) {
-      console.error(`Unable to get team by code: ${e}`);
-      return null;
-    }
-  }
+  //     return user;
+  //   } catch (e) {
+  //     console.error(`Unable to get team by code: ${e}`);
+  //     return null;
+  //   }
+  // }
 }

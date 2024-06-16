@@ -111,17 +111,17 @@ export default class TeamService {
           filteredTeam.leaderboard = index + 1;
         }
 
+        console.log(routeTiming);
+
         if (routeTiming) {
           const isActive = routeTiming.start_time ? true : false;
           filteredTeam.status = isActive ? "ACTIVE" : "INACTIVE";
 
-          filteredTeam.route_started =
-            //  new Intl.DateTimeFormat("en-GB")
-            //   .format(
-            routeTiming.start_time;
-          //   )
-          // .toString();
-          console.log(routeTiming);
+          console.log(filteredTeam.status);
+          console.log(isActive);
+
+          filteredTeam.route_started = routeTiming.start_time;
+
           const startTime = routeTiming.timings.start_time;
           let endTime = routeTiming.timings.end_time;
 
