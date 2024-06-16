@@ -78,7 +78,11 @@ export default class QuestionService {
         jumbled_word,
       ].map((field) => (field === undefined ? null : field));
 
-      await ChallengeService.updateChallengeStats("add", challenge, score);
+      await ChallengeService.updateChallengeStats(
+        "add",
+        challenge,
+        numericScore
+      );
 
       const quesDocument = {
         score: numericScore,
@@ -128,8 +132,13 @@ export default class QuestionService {
         return "No question found for this id";
       }
 
+      let numericScore = existingChallenge.score;
+
       if (score) {
-        existingChallenge.score = score;
+        numericScore = Number(score);
+        if (isNaN(numericScore)) {
+          return "Invalid score value";
+        }
       }
 
       if (type) {
@@ -176,7 +185,7 @@ export default class QuestionService {
         await ChallengeService.updateChallengeStats(
           "update",
           existingChallenge.challenge,
-          score
+          numericScore
         );
       }
 

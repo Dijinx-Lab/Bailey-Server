@@ -159,7 +159,7 @@ export default class ChallengeService {
         const deletePromises = existingQuestion.map((question) =>
           QuestionService.deleteQuestion(question._id)
         );
-        
+
         await Promise.all(deletePromises);
 
         const deletedOn = new Date();
@@ -399,6 +399,4 @@ export default class ChallengeService {
       return e.message;
     }
   }
-
-  
 }
