@@ -66,11 +66,6 @@ export default class UserDAO {
   }
   static async deleteUserByID(userId) {
     try {
-      // Validate userId
-      // if (!mongoose.Types.ObjectId.isValid(userId)) {
-      //   throw new Error('Invalid user ID');
-      // }
-
       // Find user by ID and delete
       const deletedUser = await usercon.deleteOne({ _id: new ObjectId(userId) });
 
