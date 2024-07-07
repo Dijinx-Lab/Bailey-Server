@@ -19,7 +19,7 @@ const checkTokenMiddleware = async (req, res, next) => {
       if (!tokenObject) {
         errorMessage = "Malformed or unknown token in the header";
       } else {
-        if (tokenObject.role !== "admin") {
+        if (tokenObject.role !== "user") {
           errorMessage =
             "You do not have the permissions to perform this operation";
         }

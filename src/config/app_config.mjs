@@ -12,6 +12,12 @@ const appConfig = {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN,
   },
+  smtp: {
+    user: process.env.EMAIL_USER,
+    pwd: process.env.EMAIL_PWD,
+    service: process.env.EMAIL_SERVICE,
+  },
+  
 };
 
 export default appConfig;

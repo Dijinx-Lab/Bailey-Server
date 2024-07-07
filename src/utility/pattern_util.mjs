@@ -9,8 +9,12 @@ const PatternUtil = {
   },
 
   checkAlphabeticName: (name) => {
-    const alphabeticPattern = /^[a-zA-Z]+$/;
+    const alphabeticPattern = /^[a-zA-Z\s]+$/;
     return alphabeticPattern.test(name);
+  },
+  checkPhoneNumber: (phoneNumber) => {
+    const numericPattern = /^\d+$/;
+    return numericPattern.test(phoneNumber);
   },
 
   filterParametersFromObject: (object, params) => {

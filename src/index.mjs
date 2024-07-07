@@ -12,7 +12,7 @@ import TimingService from "./services/timing_service.mjs";
 import AwsUtil from "./utility/aws_util.mjs";
 import AdminService from "./services/admin_service.mjs";
 import TokenService from "./services/token_service.mjs";
-
+import UserService from "./services/user_service.mjs";
 const port = appConfig.server.port;
 
 const username = encodeURIComponent(databaseConfig.database.username);
@@ -36,6 +36,7 @@ MongoClient.connect(uri, {
     await TimingService.connectDatabase(client);
     await AdminService.connectDatabase(client);
     await TokenService.connectDatabase(client);
+    await UserService.connectDatabase(client);
     FirebaseUtility.initializeApp();
     AwsUtil.initialize();
     app.listen(port, () => {

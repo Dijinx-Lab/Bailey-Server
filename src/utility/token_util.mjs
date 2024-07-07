@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import appConfig from "../config/app_config.mjs";
 import TokenService from "../services/token_service.mjs";
+import UserService from "../services/user_service.mjs";
 
 const secretKey = appConfig.jwt.secret;
 
@@ -55,7 +56,7 @@ const TokenUtil = {
   },
 
   getDataFromToken: async (token) => {
-    const tokenObject = await TokenService.getUserToken(
+    const tokenObject = await UserService.getUserFromToken(
       TokenUtil.cleanToken(token)
     );
 
