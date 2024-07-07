@@ -1,5 +1,5 @@
 import databaseConfig from "../config/database_config.mjs";
-
+import { ObjectId } from "mongodb";
 let usercon;
 
 export default class UserDAO {
@@ -62,6 +62,25 @@ export default class UserDAO {
     } catch (e) {
       console.error(`Unable to update user field: ${e}`);
       return null;
+    }
+  }
+  static async deleteUserByID(userId) {
+    try {
+      // Validate userId
+      // if (!mongoose.Types.ObjectId.isValid(userId)) {
+      //   throw new Error('Invalid user ID');
+      // }
+
+      // Find user by ID and delete
+      const deletedUser = await usercon.deleteOne({ _id: new ObjectId(userId) });
+
+      if (!deletedUser || deletedUser.deletedCount === 0) {
+        throw new Error('User not found or already deleted');
+      }
+
+      return deletedUser;
+    } catch (error) {
+      throw new Error(`Failed to delete user: ${error.message}`);
     }
   }
 
