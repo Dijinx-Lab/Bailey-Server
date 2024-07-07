@@ -156,6 +156,27 @@ export default class UserController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+    
+    static async apiDeleteUser(req, res, next) {
+      try {
+        const token = TokenUtil.cleanToken(req.headers["authorization"]);
+        const serviceResponse = await UserService.deleteUser(token);
+        if (typeof serviceResponse === "string") {
+          res
+            .status(200)
+            .json({ success: false, data: {}, message: serviceResponse });
+        } else {
+          res.status(200).json({
+            success: true,
+            data: serviceResponse,
+            message: "User Deleted successfully",
+          });
+        }
+      } catch (e) {
+        res.status(500).json({ success: false, data: {}, message: e.message });
+      }
+    }
+  
 
   static async apiVerifyCredential(req, res, next) {
     try {

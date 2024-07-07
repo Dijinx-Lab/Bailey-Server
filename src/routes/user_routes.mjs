@@ -79,4 +79,12 @@ router
     UserController.apiForgotPassword
   );
 
+router
+.route(baseRoute + "/delete")
+.delete(
+  checkTokenMiddleware,
+  UserController.apiDeleteUser
+);
+
+
 export default router;

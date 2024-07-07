@@ -645,6 +645,25 @@ export default class UserService {
       return e.message;
     }
   }
+  static async deleteUser(token) {
+    try {
+      let databaseUser = await UserDAO.getUserByAuthTokenFromDB(token);
+      if (!databaseUser) {
+        return "No such user found";
+      }
+  
+      // Assuming UserDAO.deleteUserByID is a method to delete user by ID
+      const deletedUser = await UserDAO.deleteUserByID(databaseUser._id);
+  
+      if (!deletedUser) {
+        return "Failed to delete user";
+      }
+  
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
 
   static async getUserFromToken(authToken) {
     try {
