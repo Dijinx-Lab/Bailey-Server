@@ -13,12 +13,7 @@ router
   .post(
     checkRequiredFieldsMiddleware([
       "name",
-      // "first_name",
-      // "last_name",
       "email",
-      // "age",
-      // "country_code",
-      // "phone",
       "password",
       "confirm_password",
       "fcm_token",

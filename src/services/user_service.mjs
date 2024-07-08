@@ -2,7 +2,7 @@ import UserDAO from "../data/user_dao.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 import PatternUtil from "../utility/pattern_util.mjs";
 import AuthUtil from "../utility/auth_util.mjs";
-import EmailUtility from "../utility/email_util.mjs";
+// import EmailUtility from "../utility/email_util.mjs";
 
 export default class UserService {
   static async connectDatabase(client) {
@@ -15,10 +15,7 @@ export default class UserService {
 
   static async checkCreateAccountValidations(
     name,
-    // lastName,
     email,
-    // countryCode,
-    // phone,
     password,
     confirmPassword
   ) {
@@ -34,13 +31,7 @@ export default class UserService {
     if (!emailCheck) {
       return "Please enter a valid email address";
     }
-    // const phoneCheck = PatternUtil.checkPhoneNumber(phone);
-
-    // if (!phoneCheck) {
-    //   return "Please enter a valid phone number";
-    // }
-    const nameCheck =
-      PatternUtil.checkAlphabeticName(name)
+    const nameCheck = PatternUtil.checkAlphabeticName(name);
     if (!nameCheck) {
       return "Your name can not contain any numbers and special characters";
     }
@@ -48,19 +39,10 @@ export default class UserService {
     if (existingUser) {
       return "A user with this email already exists, please choose another or sign in instead";
     }
-    // existingUser = await UserDAO.getUserByPhoneFromDB(countryCode, phone);
-    // if (existingUser) {
-    //   return "A user with this phone already exists, please choose another or sign in instead";
-    // }
     return null;
   }
 
-  static async checkSignInAccountValidations(
-    email,
-    // phone,
-    // countryCode,
-    password
-  ) {
+  static async checkSignInAccountValidations(email, password) {
     let errorString;
     let existingUser;
 
@@ -69,15 +51,8 @@ export default class UserService {
       if (!existingUser) {
         errorString = "Either your email or password is incorrect";
       }
-    } 
-    // else if (phone) {
-    //   existingUser = await UserDAO.getUserByPhoneFromDB(countryCode, phone);
-    //   if (!existingUser) {
-    //     errorString = "Either your phone number or password is incorrect";
-    //   }
-    // } 
-    else {
-      errorString = "Email is required to identify you";
+    } else {
+      errorString = "Either your email or password is incorrect";
     }
 
     if (!errorString) {
@@ -90,9 +65,7 @@ export default class UserService {
           existingUser.password
         );
         if (!passwordCheck) {
-       
-            errorString = "Either your email or password is incorrect";
-          
+          errorString = "Either your email or password is incorrect";
         }
       }
     }
@@ -117,7 +90,7 @@ export default class UserService {
         existingUser.password
       );
       if (!passwordCheck) {
-        errorString = "The provided previous password is incorrect";
+        errorString = "The current password is incorrect";
       }
     }
     if (!errorString) {
@@ -141,9 +114,6 @@ export default class UserService {
   static async createUserAccount(
     name,
     email,
-    // age,
-    // countryCode,
-    // phone,
     password,
     confirmPassword,
     fcmToken
@@ -161,12 +131,6 @@ export default class UserService {
 
       const createdOn = new Date();
       const deletedOn = null;
-      const emailVerifiedOn = null;
-      // const phoneVerifiedOn = null;
-      // const otpCode = PatternUtil.generateRandomCode();
-      // const verification = {
-      //   email: otpCode,
-      // };
       const hashedPassword = await AuthUtil.hashPassword(password);
       const authToken = TokenUtil.createToken({
         email: email,
@@ -175,23 +139,14 @@ export default class UserService {
 
       const userDocument = {
         name: name,
-        // first_name: firstName,
-        // last_name: lastName,
-        // age: age,
         email: email,
-        // country_code: countryCode,
-        //last_city: null,
-        // phone: phone,
         fcm_token: fcmToken,
         role: "user",
         token: authToken,
         password: hashedPassword,
-        bookmarked: [],
-        alerted: [],
-        // verification: verification,
+        google_id: null,
+        apple_id: null,
         last_signin_on: createdOn,
-        email_verified_on: emailVerifiedOn,
-        // phone_verified_on: phoneVerifiedOn,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -203,11 +158,6 @@ export default class UserService {
       const filteredUser = this.getFormattedUser(databaseUser);
 
       filteredUser.login_method = "email";
-      // const emailResponse = await EmailUtility.sendMail(
-      //   email,
-      //   "Verify Your Account",
-      //   `<h1>${otpCode}</h1>`
-      // );
 
       return { user: filteredUser };
     } catch (e) {
@@ -290,12 +240,11 @@ export default class UserService {
         processedUpdateFields
       );
 
-      const emailResponse = await EmailUtility.sendMail(
-        email,
-        "Verify Your Event Bazaar Account",
-        `<h1>${otpCode}</h1>`
-      );
-
+      // const emailResponse = await EmailUtility.sendMail(
+      //   email,
+      //   "Verify your account with Baily & Bailey ",
+      //   `<h1>${otpCode}</h1>`
+      // );
       return {};
     } catch (e) {
       return e.message;
@@ -307,29 +256,27 @@ export default class UserService {
       let databaseUser = await this.getUserFromToken(token);
       const validUpdateFields = {};
 
-      // Iterate over updateFields to perform validation checks
       for (const field in updateFields) {
         if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
           const value = updateFields[field];
-  
-          // Perform field-specific checks
-          if (field === 'name') {
+          if (field === "name") {
             const nameCheck = PatternUtil.checkAlphabeticName(value);
             if (!nameCheck) {
-              throw new Error('Invalid name format. Name should contain only alphabetic characters.');
+              throw new Error(
+                "Invalid name format. Name should contain only alphabetic characters."
+              );
             }
-          } else if (field === 'email') {
+          } else if (field === "email") {
             const emailCheck = PatternUtil.checkEmailPattern(value);
             if (!emailCheck) {
-              throw new Error('Invalid email format.');
+              throw new Error("Invalid email format.");
             }
           }
-  
-          // Add valid field to the validUpdateFields object
           validUpdateFields[field] = value;
         }
       }
-      const processedUpdateFields = this.convertToDotNotation(validUpdateFields);
+      const processedUpdateFields =
+        this.convertToDotNotation(validUpdateFields);
 
       databaseUser = await UserDAO.updateUserFieldByID(
         databaseUser._id,
@@ -340,16 +287,6 @@ export default class UserService {
       const filteredUser = this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-  static async updateUserByUser(user) {
-    try {
-      const databaseUser = await UserDAO.updateUserFieldByID(user._id, user);
-
-      return {};
     } catch (e) {
       return e.message;
     }
@@ -429,8 +366,7 @@ export default class UserService {
     try {
       const validationCheck = await this.checkSignInAccountValidations(
         email,
-        // phone,
-        // countryCode,
+
         password
       );
 
@@ -440,28 +376,14 @@ export default class UserService {
 
       let existingUser = validationCheck;
 
-      // if (!phone && !existingUser.email_verified_on) {
-      //   await this.sendVerification(email);
-      //   return 403;
-      // }
-
       const signedInOn = new Date();
 
       let tokenString;
 
-      // if (phone) {
-      //   tokenString = TokenUtil.createToken({
-      //     phone: phone,
-      //     last_signin_on: signedInOn,
-      //   });
-      // } else {
-
-        tokenString = TokenUtil.createToken({
-          email: email,
-          last_signin_on: signedInOn,
-        });
-
-      // }
+      tokenString = TokenUtil.createToken({
+        email: email,
+        last_signin_on: signedInOn,
+      });
 
       existingUser = await UserDAO.updateUserFieldByID(existingUser._id, {
         token: tokenString,
@@ -472,7 +394,7 @@ export default class UserService {
       const updatedUser = await UserDAO.getUserByIDFromDB(existingUser._id);
       const filteredUsers = this.getFormattedUser(updatedUser);
 
-      filteredUsers.login_method = email ? "email" : "";
+      filteredUsers.login_method = "email";
 
       return { user: filteredUsers };
     } catch (e) {
@@ -564,8 +486,6 @@ export default class UserService {
       role: "user",
       token: authToken,
       password: null,
-      bookmarked: [],
-      alerted: [],
       google_id: googleId ?? null,
       apple_id: appleId ?? null,
       last_signin_on: createdOn,
@@ -595,19 +515,6 @@ export default class UserService {
     }
   }
 
-  static async getUserByCity(city) {
-    try {
-      let databaseUsers = await UserDAO.getUserByCityFromDB(city);
-      if (!databaseUsers) {
-        return [];
-      }
-
-      return databaseUsers;
-    } catch (e) {
-      return e.message;
-    }
-  }
-
   static getFormattedUser(rawUser) {
     const filteredUser = PatternUtil.filterParametersFromObject(rawUser, [
       "_id",
@@ -616,12 +523,6 @@ export default class UserService {
       "deleted_on",
       "role",
       "password",
-      "bookmarked",
-      "alerted",
-      "last_city",
-      "verification",
-      "email_verified_on",
-      "phone_verified_on",
     ]);
 
     filteredUser.notifications_enabled =
@@ -645,20 +546,19 @@ export default class UserService {
       return e.message;
     }
   }
+
   static async deleteUser(token) {
     try {
       let databaseUser = await UserDAO.getUserByAuthTokenFromDB(token);
       if (!databaseUser) {
         return "No such user found";
       }
-  
-      // Assuming UserDAO.deleteUserByID is a method to delete user by ID
       const deletedUser = await UserDAO.deleteUserByID(databaseUser._id);
-  
+
       if (!deletedUser) {
         return "Failed to delete user";
       }
-  
+
       return {};
     } catch (e) {
       return e.message;
@@ -678,33 +578,6 @@ export default class UserService {
     try {
       let databaseUser = await UserDAO.getUserByIDFromDB(userId);
       return databaseUser;
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-  static async updateUser(id, updateFields) {
-    try {
-      let existingUser = await UserDAO.getUserByIDFromDB(id);
-
-      if (!existingUser) {
-        return "We do not have a user with the specified ID";
-      }
-      existingUser = await UserDAO.updateUserFieldByID(id, updateFields);
-
-      const updatedUser = await UserDAO.getUserByIDFromDB(id);
-
-      let filteredUser = PatternUtil.filterParametersFromObject(updatedUser, [
-        "_id",
-        "fcm_token",
-        "created_on",
-        "deleted_on",
-        "role",
-        "password",
-        "bookmarks",
-      ]);
-
-      return { user: filteredUser };
     } catch (e) {
       return e.message;
     }

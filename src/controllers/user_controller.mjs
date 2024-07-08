@@ -4,27 +4,11 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class UserController {
   static async apiCreateOrGetUserAccount(req, res, next) {
     try {
-      const {
-        name,
-        // first_name,
-        // last_name,
-        email,
-        // age,
-        // country_code,
-        // phone,
-        password,
-        confirm_password,
-        fcm_token,
-      } = req.body;
+      const { name, email, password, confirm_password, fcm_token } = req.body;
 
       const serviceResponse = await UserService.createUserAccount(
         name,
-        // first_name,
-        // last_name,
         email,
-        // age,
-        // country_code,
-        // phone,
         password,
         confirm_password,
         fcm_token
@@ -47,12 +31,10 @@ export default class UserController {
 
   static async apiSignInUser(req, res, next) {
     try {
-      const { email,  password, fcm_token } = req.body;
+      const { email, password, fcm_token } = req.body;
 
       const serviceResponse = await UserService.signInUser(
         email,
-        // phone,
-        // country_code,
         password,
         fcm_token
       );
@@ -96,16 +78,14 @@ export default class UserController {
         res
           .status(200)
           .json({ success: false, data: {}, message: serviceResponse });
-      } 
-      else if (typeof serviceResponse === "number") {
+      } else if (typeof serviceResponse === "number") {
         res.status(serviceResponse).json({
           success: false,
           data: {},
           message:
             "You'll need to verify your email to proceed, code is sent to your email",
         });
-      } 
-      else {
+      } else {
         res.status(200).json({
           success: true,
           data: serviceResponse,
@@ -156,27 +136,26 @@ export default class UserController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
-    
-    static async apiDeleteUser(req, res, next) {
-      try {
-        const token = TokenUtil.cleanToken(req.headers["authorization"]);
-        const serviceResponse = await UserService.deleteUser(token);
-        if (typeof serviceResponse === "string") {
-          res
-            .status(200)
-            .json({ success: false, data: {}, message: serviceResponse });
-        } else {
-          res.status(200).json({
-            success: true,
-            data: serviceResponse,
-            message: "User Deleted successfully",
-          });
-        }
-      } catch (e) {
-        res.status(500).json({ success: false, data: {}, message: e.message });
+
+  static async apiDeleteUser(req, res, next) {
+    try {
+      const token = TokenUtil.cleanToken(req.headers["authorization"]);
+      const serviceResponse = await UserService.deleteUser(token);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "User Deleted successfully",
+        });
       }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
     }
-  
+  }
 
   static async apiVerifyCredential(req, res, next) {
     try {
@@ -215,7 +194,7 @@ export default class UserController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: `A code has been sent to your ${email}, please check your inbox`,
+          message: `A code has been sent to your ${email}, please check your email`,
         });
       }
     } catch (e) {
@@ -225,11 +204,7 @@ export default class UserController {
 
   static async apiUpdateUserProfile(req, res, next) {
     try {
-      const {
-        name,
-        email,
-        fcm_token,
-      } = req.body;
+      const { name, email, fcm_token } = req.body;
       const updateFields = Object.fromEntries(
         Object.entries({
           name,

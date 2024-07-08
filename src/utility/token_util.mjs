@@ -1,12 +1,10 @@
 import jwt from "jsonwebtoken";
 import appConfig from "../config/app_config.mjs";
-import TokenService from "../services/token_service.mjs";
 import UserService from "../services/user_service.mjs";
 
 const secretKey = appConfig.jwt.secret;
 
 const TokenUtil = {
-  
   createToken: (payload) => {
     try {
       const token = jwt.sign(payload, secretKey, {

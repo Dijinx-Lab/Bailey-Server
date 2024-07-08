@@ -67,10 +67,12 @@ export default class UserDAO {
   static async deleteUserByID(userId) {
     try {
       // Find user by ID and delete
-      const deletedUser = await usercon.deleteOne({ _id: new ObjectId(userId) });
+      const deletedUser = await usercon.deleteOne({
+        _id: new ObjectId(userId),
+      });
 
       if (!deletedUser || deletedUser.deletedCount === 0) {
-        throw new Error('User not found or already deleted');
+        throw new Error("User not found or already deleted");
       }
 
       return deletedUser;

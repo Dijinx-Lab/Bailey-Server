@@ -2,16 +2,8 @@ import app from "./server.mjs";
 import { MongoClient } from "mongodb";
 import appConfig from "./config/app_config.mjs";
 import databaseConfig from "./config/database_config.mjs";
-import QuestionService from "./services/questions_service.mjs";
-import ChallengeService from "./services/challenges_service.mjs";
-import RouteService from "./services/routes_service.mjs";
-import TeamService from "./services/teams_service.mjs";
-import AnswerService from "./services/answers_service.mjs";
 import FirebaseUtility from "./utility/fcm_utility.mjs";
-import TimingService from "./services/timing_service.mjs";
-import AwsUtil from "./utility/aws_util.mjs";
-import AdminService from "./services/admin_service.mjs";
-import TokenService from "./services/token_service.mjs";
+// import AwsUtil from "./utility/aws_util.mjs";
 import UserService from "./services/user_service.mjs";
 const port = appConfig.server.port;
 
@@ -28,18 +20,10 @@ MongoClient.connect(uri, {
     process.exit(1);
   })
   .then(async (client) => {
-    await QuestionService.connectDatabase(client);
-    await ChallengeService.connectDatabase(client);
-    await RouteService.connectDatabase(client);
-    await TeamService.connectDatabase(client);
-    await AnswerService.connectDatabase(client);
-    await TimingService.connectDatabase(client);
-    await AdminService.connectDatabase(client);
-    await TokenService.connectDatabase(client);
     await UserService.connectDatabase(client);
     FirebaseUtility.initializeApp();
-    AwsUtil.initialize();
+    // AwsUtil.initialize();
     app.listen(port, () => {
-      console.log(`prod server listening on ${port}`);
+      console.log(`dev server listening on ${port}`);
     });
   });
