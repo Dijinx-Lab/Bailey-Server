@@ -255,7 +255,9 @@ export default class UserService {
     try {
       let databaseUser = await this.getUserFromToken(token);
       const validUpdateFields = {};
-
+      if (!databaseUser.password) {
+        throw new Error("SSO Users cannot update email.");
+      }
       for (const field in updateFields) {
         if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
           const value = updateFields[field];
@@ -271,6 +273,10 @@ export default class UserService {
             if (!emailCheck) {
               throw new Error("Invalid email format.");
             }
+            const emailExists = await UserDAO.getUserByEmailFromDB(value);
+          if (emailExists) {
+            throw new Error("Email already exists.");
+          }
           }
           validUpdateFields[field] = value;
         }
