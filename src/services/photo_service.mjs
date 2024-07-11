@@ -4,6 +4,8 @@ import AuthUtil from "../utility/auth_util.mjs";
 // import EmailUtility from "../utility/email_util.mjs";
 import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
+import UploadService from "./upload_service.mjs";
+import { ObjectId } from "mongodb";
 export default class PhotoService {
   static async connectDatabase(client) {
     try {
@@ -62,13 +64,15 @@ export default class PhotoService {
     ]);
     return filteredPhoto;
   }
-  static async updateUploadId(token, _id,upload_id) {
+  static async updateUploadId(token, _id,old_upload_id,upload_id) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
       let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
       const processedUpdateFields = UserService.convertToDotNotation({
         upload_id: upload_id,
       });
+      await UploadService.deleteUpload(new ObjectId(old_upload_id))
+
       retrievedPhoto = await PhotoDAO.updateUploadidFieldByID(
         retrievedPhoto._id,
         processedUpdateFields

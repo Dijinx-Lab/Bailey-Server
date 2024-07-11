@@ -31,11 +31,12 @@ export default class WritingsController {
       static async apiUpdateUploadID(req, res, next) {
         try {
           const _id = req.query._id;
-          const { upload_id } = req.body;
+          const { old_upload_id,upload_id } = req.body;
           const token = TokenUtil.cleanToken(req.headers["authorization"]);
           const serviceResponse = await WritingService.updateUploadId(
             token,
             _id,
+            old_upload_id,
             upload_id
           );
           if (typeof serviceResponse === "string") {

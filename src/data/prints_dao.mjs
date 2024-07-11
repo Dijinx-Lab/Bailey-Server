@@ -60,7 +60,19 @@ export default class PrintsDAO {
       return null;
     }
   }
-
+  static async getPrintByUserHandFinger(user_id, hand, finger) {
+    try {
+      const result = await printcon.findOne({
+        user_id: user_id,
+        hand: hand,
+        finger: finger,
+        deleted_on: null // assuming that deleted prints have a non-null deleted_on field
+      });
+      return result;
+    } catch (e) {
+      throw new Error(`Unable to query prints: ${e}`);
+    }
+  }
   static async getPrintsByHandFromDB(hand) {
     try {
       const prints = await printcon.find({ hand: hand }).toArray();;

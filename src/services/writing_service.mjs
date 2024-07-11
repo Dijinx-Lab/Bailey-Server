@@ -5,6 +5,9 @@ import AuthUtil from "../utility/auth_util.mjs";
 import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
 import WritingDAO from "../data/writing_dao.mjs";
+import UploadService from "./upload_service.mjs";
+import { ObjectId } from "mongodb";
+
 export default class WritingService {
   static async connectDatabase(client) {
     try {
@@ -63,13 +66,15 @@ export default class WritingService {
     ]);
     return filteredWriting;
   }
-  static async updateUploadId(token, _id,upload_id) {
+  static async updateUploadId(token, _id,old_upload_id,upload_id) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
       let retrievedWriting = await WritingDAO.getWritingByIDFromDB(_id);
       const processedUpdateFields = UserService.convertToDotNotation({
         upload_id: upload_id,
       });
+      await UploadService.deleteUpload(new ObjectId(old_upload_id))
+
       retrievedWriting = await WritingDAO.updateUploadidFieldByID(
         retrievedWriting._id,
         processedUpdateFields

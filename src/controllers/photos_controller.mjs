@@ -26,124 +26,17 @@ export default class PhotosController {
     }
   }
 
-  static async apiSignInUser(req, res, next) {
-    try {
-      const { email, password, fcm_token } = req.body;
 
-      const serviceResponse = await UserService.signInUser(
-        email,
-        password,
-        fcm_token
-      );
-
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else if (typeof serviceResponse === "number") {
-        res.status(serviceResponse).json({
-          success: false,
-          data: {},
-          message:
-            "You'll need to verify your email to proceed, code is sent to your email",
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
-
-
-
-  static async apiGetUserDetail(req, res, next) {
-    try {
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await UserService.getUserDetails(token);
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
-
-  
-
-  static async apiDeleteUser(req, res, next) {
-    try {
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await UserService.deleteUser(token);
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "User Deleted successfully",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
-
-
-
-  static async apiUpdateUserProfile(req, res, next) {
-    try {
-      const { name, email, fcm_token } = req.body;
-      const updateFields = Object.fromEntries(
-        Object.entries({
-          name,
-          email,
-          fcm_token,
-        }).filter(([_, value]) => value !== undefined && value !== null)
-      );
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await UserService.updateProfile(
-        token,
-        updateFields
-      );
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
 
   static async apiUpdateUploadID(req, res, next) {
     try {
       const _id = req.query._id;
-      const { upload_id } = req.body;
+      const { old_upload_id,upload_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
       const serviceResponse = await PhotoService.updateUploadId(
         token,
         _id,
+        old_upload_id,
         upload_id
       );
       if (typeof serviceResponse === "string") {

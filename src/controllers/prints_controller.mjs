@@ -141,13 +141,14 @@ export default class PrintsController {
   static async apiUpdatePrint(req, res, next) {
     try {
       const _id = req.query._id;
-      const { hand,finger,upload_id } = req.body;
+      const { old_upload_id,upload_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
       const serviceResponse = await PrintService.updatePrint(
         token,
         _id,
-        hand,
-        finger,
+        // hand,
+        // finger,
+        old_upload_id,
         upload_id
       );
       if (typeof serviceResponse === "string") {

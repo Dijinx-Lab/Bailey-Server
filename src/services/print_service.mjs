@@ -5,6 +5,8 @@ import AuthUtil from "../utility/auth_util.mjs";
 import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
 import PrintsDAO from "../data/prints_dao.mjs";
+import UploadService from "./upload_service.mjs";
+import { ObjectId } from "mongodb";
 export default class PrintService {
   static async connectDatabase(client) {
     try {
@@ -30,6 +32,10 @@ export default class PrintService {
       let databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
         return "User with this token does not exists";
+      }
+      const existingPrint = await PrintsDAO.getPrintByUserHandFinger(databaseUser._id, hand, finger);
+      if (existingPrint) {
+        throw new Error('Print already allotted');
       }
       const printDocument = {
         user_id: databaseUser._id,
@@ -60,20 +66,21 @@ export default class PrintService {
     ]);
     return filteredPrint;
   }
-  static async updatePrint(token, _id, hand, finger, upload_id) {
+  static async updatePrint(token, _id,old_upload_id, upload_id) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
       let retrievedPrint = await PrintsDAO.getPrintsByIDFromDB(_id);
       const processedUpdateFields = UserService.convertToDotNotation({
-        hand: hand,
-        finger: finger,
+        // hand: hand,
+        // finger: finger,
         upload_id: upload_id,
       });
+       await UploadService.deleteUpload(new ObjectId(old_upload_id))
+
       retrievedPrint = await PrintsDAO.updatePrintsFieldByID(
         retrievedPrint._id,
         processedUpdateFields
       );
-
       const updatedPrint = await PrintsDAO.getPrintsByIDFromDB(retrievedPrint._id);
       const filteredPrint = this.getFormattedPrint(updatedPrint);
 

@@ -28,6 +28,7 @@ router
   .put(
     checkRequiredFieldsMiddleware([
     "_id",
+    "upload_id"
   ]),checkTokenMiddleware, PrintsController.apiUpdatePrint);
   
   
