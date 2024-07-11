@@ -106,11 +106,14 @@ export default class PrintService {
   // }
   static async getAllPrints() {
     try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPrint = await PrintsDAO.getAllPrints();
+      let databaseUser = await UserService.getUserFromToken(token);
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+      let retrievedPrint = await PrintsDAO.getAllPrints(databaseUser._id);
 
 
-      if (!retrievedPrint) {
+      if (!retrievedPrint || retrievedPhoto.length === 0) {
         return "No fingerprints found";
       } else {
         let leftHandPrints = [];

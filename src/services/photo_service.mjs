@@ -104,9 +104,13 @@ export default class PhotoService {
   static async getAllUploadId(token,) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getAllPhotosFromDB();
+      let databaseUser = await UserService.getUserFromToken(token);
+    if (!databaseUser) {
+      return "User with this token does not exist";
+    }
+      let retrievedPhoto = await PhotoDAO.getAllPhotosFromDB(databaseUser._id);
    
-      if (!retrievedPhoto) {
+      if (!retrievedPhoto || retrievedPhoto.length === 0) {
         return "No Photos found";
       } else {
         for (let i = 0; i < retrievedPhoto.length; i++) {

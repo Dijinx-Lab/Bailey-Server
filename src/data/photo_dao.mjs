@@ -36,10 +36,10 @@ export default class PhotoDAO {
       return null;
     }
   }
-  static async getAllPhotosFromDB(id) {
+  static async getAllPhotosFromDB(user_id) {
     try {
 
-      const photo = await photocon.find({ deleted_on: { $eq: null } }).toArray();
+      const photo = await photocon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
       return photo;
     } catch (e) {
       console.error(`Unable to get photo by ID: ${e}`);
@@ -57,6 +57,15 @@ export default class PhotoDAO {
     } catch (e) {
       console.error(`Unable to update photo field: ${e}`);
       return null;
+    }
+  }
+
+  static async deletePhotosByUserID(user_id) {
+    try {
+      const result = await photocon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete photo: ${e}`);
     }
   }
 }

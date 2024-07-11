@@ -36,10 +36,10 @@ export default class WritingDAO {
       return null;
     }
   }
-  static async getAllWritingFromDB(id) {
+  static async getAllWritingFromDB(user_id) {
     try {
 
-      const photo = await writingcon.find({ deleted_on: { $eq: null } }).toArray();
+      const photo = await writingcon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
       return photo;
     } catch (e) {
       console.error(`Unable to get photo by ID: ${e}`);
@@ -57,6 +57,15 @@ export default class WritingDAO {
     } catch (e) {
       console.error(`Unable to update photo field: ${e}`);
       return null;
+    }
+  }
+
+  static async deleteWritingsByUserID(user_id) {
+    try {
+      const result = await writingcon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete writing: ${e}`);
     }
   }
 }

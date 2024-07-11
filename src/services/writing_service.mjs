@@ -105,10 +105,13 @@ export default class WritingService {
   }
   static async getAllUploadId(token,) {
     try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedWriting = await WritingDAO.getAllWritingFromDB();
+        let databaseUser = await UserService.getUserFromToken(token);
+        if (!databaseUser) {
+          return "User with this token does not exist";
+        }
+      let retrievedWriting = await WritingDAO.getAllWritingFromDB(databaseUser.user_id);
    
-      if (!retrievedWriting) {
+      if (!retrievedWriting || retrievedPhoto.length === 0) {
         return "No Writings found";
       } else {
         for (let i = 0; i < retrievedWriting.length; i++) {

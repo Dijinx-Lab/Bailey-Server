@@ -36,9 +36,9 @@ export default class PrintsDAO {
       return null;
     }
   }
-  static async getAllPrints(id) {
+  static async getAllPrints(user_id) {
     try {
-      const print = await printcon.find({ deleted_on: { $eq: null } }).toArray();
+      const print = await printcon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
       // const print = await printcon.findOne({ _id: new ObjectId(id) });
       return print;
     } catch (e) {
@@ -80,6 +80,15 @@ export default class PrintsDAO {
     } catch (e) {
       console.error(`Unable to get prints by hand: ${e}`);
       return null;
+    }
+  }
+
+  static async deletePrintsByUserID(user_id) {
+    try {
+      const result = await printcon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete prints: ${e}`);
     }
   }
 }
