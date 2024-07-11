@@ -3,7 +3,7 @@ import { MongoClient } from "mongodb";
 import appConfig from "./config/app_config.mjs";
 import databaseConfig from "./config/database_config.mjs";
 import FirebaseUtility from "./utility/fcm_utility.mjs";
-// import AwsUtil from "./utility/aws_util.mjs";
+import AwsUtil from "./utility/aws_util.mjs";
 import UserService from "./services/user_service.mjs";
 import PhotoService from "./services/photo_service.mjs";
 const port = appConfig.server.port;
@@ -24,7 +24,7 @@ MongoClient.connect(uri, {
     await UserService.connectDatabase(client);
     await PhotoService.connectDatabase(client);
     FirebaseUtility.initializeApp();
-    // AwsUtil.initialize();
+    AwsUtil.initialize();
     app.listen(port, () => {
       console.log(`dev server listening on ${port}`);
     });
