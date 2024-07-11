@@ -3,7 +3,7 @@ import UserController from "../controllers/user_controller.mjs";
 import PhotosController from "../controllers/photos_controller.mjs";
 import checkRequiredFieldsMiddleware from "../middleware/check_required_fields_middleware.mjs";
 import checkTokenMiddleware from "../middleware/check_token_middleware.mjs";
-import { Omics } from "aws-sdk";
+// import { Omics } from "aws-sdk";
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router
     checkRequiredFieldsMiddleware([
       "upload_id",
     ]),
+    checkTokenMiddleware,
     PhotosController.apiAddPhoto
   );
 

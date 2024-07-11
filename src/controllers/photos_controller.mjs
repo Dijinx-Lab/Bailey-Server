@@ -1,17 +1,14 @@
 import UserService from "../services/user_service.mjs";
 import TokenUtil from "../utility/token_util.mjs";
-
+import PhotoService from "../services/photo_service.mjs";
 export default class PhotosController {
   static async apiAddPhoto(req, res, next) {
     try {
-      const { name, email, password, confirm_password, fcm_token } = req.body;
-
-      const serviceResponse = await UserService.createUserAccount(
-        name,
-        email,
-        password,
-        confirm_password,
-        fcm_token
+      const { upload_id } = req.body;
+      const token = TokenUtil.cleanToken(req.headers["authorization"]);
+      const serviceResponse = await PhotoService.addPhotoInDB(
+        token,
+        upload_id,
       );
       if (typeof serviceResponse === "string") {
         res
@@ -21,7 +18,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "",
+          message: "Photo has been uploaded successfully",
         });
       }
     } catch (e) {
