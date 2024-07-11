@@ -4,16 +4,17 @@ import AuthUtil from "../utility/auth_util.mjs";
 // import EmailUtility from "../utility/email_util.mjs";
 import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
-export default class PhotoService {
+import WritingDAO from "../data/writing_dao.mjs";
+export default class WritingService {
   static async connectDatabase(client) {
     try {
-      await PhotoDAO.injectDB(client);
+      await WritingDAO.injectDB(client);
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
     }
   }
 
-  static async addPhotoInDB(
+  static async addWritingInDB(
     token,
     upload_id,
   ) {
@@ -28,7 +29,7 @@ export default class PhotoService {
       if (!databaseUser) {
         return "User with this token does not exists";
       }
-      const photoDocument = {
+      const writingDocument = {
         user_id: databaseUser._id,
         upload_id: upload_id,
         // role: "user",
@@ -41,43 +42,43 @@ export default class PhotoService {
         deleted_on: deletedOn,
       };
 
-      const addedPhoto = await PhotoDAO.addPhotoUrlToDB(photoDocument);
+      const addedWriting = await WritingDAO.addWritingToDB(writingDocument);
 
-      const photoData = await PhotoDAO.getPhotoByIDFromDB(addedPhoto);
+      const writingData = await WritingDAO.getWritingByIDFromDB(addedWriting);
 
-      const filteredPhoto = this.getFormattedPhoto(photoData);
+      const filteredWriting = this.getFormattedWriting(writingData);
 
     //   filteredUser.login_method = "email";
 
-      return { photo: filteredPhoto };
+      return { writing: filteredWriting };
     } catch (e) {
       return e.message;
     }
   }
-  static getFormattedPhoto(rawPhoto) {
-    const filteredPhoto = PatternUtil.filterParametersFromObject(rawPhoto, [
+  static getFormattedWriting(rawWriting) {
+    const filteredWriting = PatternUtil.filterParametersFromObject(rawWriting, [
       "_id",
       "created_on",
       "deleted_on",
     ]);
-    return filteredPhoto;
+    return filteredWriting;
   }
   static async updateUploadId(token, _id,upload_id) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
+      let retrievedWriting = await WritingDAO.getWritingByIDFromDB(_id);
       const processedUpdateFields = UserService.convertToDotNotation({
         upload_id: upload_id,
       });
-      retrievedPhoto = await PhotoDAO.updateUploadidFieldByID(
-        retrievedPhoto._id,
+      retrievedWriting = await WritingDAO.updateUploadidFieldByID(
+        retrievedWriting._id,
         processedUpdateFields
       );
 
-      const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      const filteredPhoto = this.getFormattedPhoto(updatedPhoto);
+      const updatedWriting = await WritingDAO.getWritingByIDFromDB(retrievedWriting._id);
+      const filteredWriting = this.getFormattedWriting(updatedWriting);
 
-      return { photo: filteredPhoto };
+      return { writing: filteredWriting };
     } catch (e) {
       return e.message;
     }
@@ -90,7 +91,7 @@ export default class PhotoService {
    
 
       // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
+      const filteredPhoto = this.getFormattedWriting(retrievedPhoto);
 
       return { photo: filteredPhoto };
     } catch (e) {
@@ -100,23 +101,23 @@ export default class PhotoService {
   static async getAllUploadId(token,) {
     try {
       // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getAllPhotosFromDB();
+      let retrievedWriting = await WritingDAO.getAllWritingFromDB();
    
-      if (!retrievedPhoto) {
-        return "No Photos found";
+      if (!retrievedWriting) {
+        return "No Writings found";
       } else {
-        for (let i = 0; i < retrievedPhoto.length; i++) {
-          const filteredPrint = PatternUtil.filterParametersFromObject(
-            retrievedPhoto[i],
+        for (let i = 0; i < retrievedWriting.length; i++) {
+          const filteredWriting = PatternUtil.filterParametersFromObject(
+            retrievedWriting[i],
             ["created_on", "deleted_on"]
           );
 
-          retrievedPhoto[i] = filteredPrint;
+          retrievedWriting[i] = filteredWriting;
         }
       // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
       // const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
 
-      return { photo: retrievedPhoto };
+      return { writing: retrievedWriting };
     }} catch (e) {
       return e.message;
     }

@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/user_routes.mjs";
 import photoRoutes from "./routes/photo_routes.mjs"
+import printRoutes from "./routes/prints_routes.mjs"
+import writingRoutes from "./routes/writings_routes.mjs"
 const app = express();
 
 app.use(cors());
@@ -11,6 +13,8 @@ const baseUrl = "/api/v1/bailey";
 
 app.use(baseUrl, userRoutes);
 app.use(baseUrl, photoRoutes);
+app.use(baseUrl, printRoutes);
+app.use(baseUrl, writingRoutes);
 
 app.use("*", (req, res) =>
   res.status(404).json({

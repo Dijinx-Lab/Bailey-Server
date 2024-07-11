@@ -6,6 +6,8 @@ import FirebaseUtility from "./utility/fcm_utility.mjs";
 import AwsUtil from "./utility/aws_util.mjs";
 import UserService from "./services/user_service.mjs";
 import PhotoService from "./services/photo_service.mjs";
+import PrintService from "./services/print_service.mjs";
+import WritingService from "./services/writing_service.mjs";
 const port = appConfig.server.port;
 
 const username = encodeURIComponent(databaseConfig.database.username);
@@ -23,6 +25,8 @@ MongoClient.connect(uri, {
   .then(async (client) => {
     await UserService.connectDatabase(client);
     await PhotoService.connectDatabase(client);
+    await PrintService.connectDatabase(client);
+    await WritingService.connectDatabase(client);
     FirebaseUtility.initializeApp();
     AwsUtil.initialize();
     app.listen(port, () => {

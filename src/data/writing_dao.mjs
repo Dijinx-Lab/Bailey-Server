@@ -1,21 +1,21 @@
 import databaseConfig from "../config/database_config.mjs";
 import { ObjectId } from "mongodb";
-let photocon;
+let writingcon;
 
-export default class PhotoDAO {
+export default class WritingDAO {
   static async injectDB(conn) {
-    if (photocon) {
+    if (writingcon) {
       return;
     }
     try {
-      photocon = conn.db(databaseConfig.database.dbName).collection("photos");
+      writingcon = conn.db(databaseConfig.database.dbName).collection("writings");
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
     }
   }
-  static async addPhotoUrlToDB(photo) {
+  static async addWritingToDB(photo) {
     try {
-      const insertionResult = await photocon.insertOne(photo);
+      const insertionResult = await writingcon.insertOne(photo);
       if (insertionResult && insertionResult.insertedId) {
         return insertionResult.insertedId;
       } else {
@@ -26,20 +26,20 @@ export default class PhotoDAO {
       return null;
     }
   }
-  static async getPhotoByIDFromDB(id) {
+  static async getWritingByIDFromDB(id) {
     try {
 
-      const photo = await photocon.findOne({ _id: new ObjectId(id) });
+      const photo = await writingcon.findOne({ _id: new ObjectId(id) });
       return photo;
     } catch (e) {
       console.error(`Unable to get photo by ID: ${e}`);
       return null;
     }
   }
-  static async getAllPhotosFromDB(id) {
+  static async getAllWritingFromDB(id) {
     try {
 
-      const photo = await photocon.find({ deleted_on: { $eq: null } }).toArray();
+      const photo = await writingcon.find({ deleted_on: { $eq: null } }).toArray();
       return photo;
     } catch (e) {
       console.error(`Unable to get photo by ID: ${e}`);
@@ -48,7 +48,7 @@ export default class PhotoDAO {
   }
   static async updateUploadidFieldByID(id, fieldsToUpdate) {
     try {
-      const photo = await photocon.findOneAndUpdate(
+      const photo = await writingcon.findOneAndUpdate(
         { _id: id },
         { $set: fieldsToUpdate },
         { new: true }

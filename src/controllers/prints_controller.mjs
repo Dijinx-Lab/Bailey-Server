@@ -1,14 +1,16 @@
 import UserService from "../services/user_service.mjs";
 import TokenUtil from "../utility/token_util.mjs";
-import PhotoService from "../services/photo_service.mjs";
-export default class PhotosController {
-  static async apiAddPhoto(req, res, next) {
+import PrintService from "../services/print_service.mjs";
+export default class PrintsController {
+  static async apiAddFinger(req, res, next) {
     try {
-      const { upload_id } = req.body;
+      const { finger,hand,upload_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PhotoService.addPhotoInDB(
+      const serviceResponse = await PrintService.addPrintInDB(
         token,
-        upload_id,
+        finger,
+        hand,
+        upload_id
       );
       if (typeof serviceResponse === "string") {
         res
@@ -18,7 +20,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Photo has been uploaded successfully",
+          message: "Fingerprints has been uploaded successfully",
         });
       }
     } catch (e) {
@@ -136,14 +138,16 @@ export default class PhotosController {
     }
   }
 
-  static async apiUpdateUploadID(req, res, next) {
+  static async apiUpdatePrint(req, res, next) {
     try {
       const _id = req.query._id;
-      const { upload_id } = req.body;
+      const { hand,finger,upload_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PhotoService.updateUploadId(
+      const serviceResponse = await PrintService.updatePrint(
         token,
         _id,
+        hand,
+        finger,
         upload_id
       );
       if (typeof serviceResponse === "string") {
@@ -154,7 +158,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Photo Updated Successfully",
+          message: "Fingerprint Updated Successfully",
         });
       }
     } catch (e) {
@@ -162,37 +166,37 @@ export default class PhotosController {
     }
   }
 
-  static async apiGetUploadID(req, res, next) {
-    try {
-      const _id = req.query._id;
-      // const { upload_id } = req.body;
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PhotoService.getUploadId(
-        token,
-        _id,
-        // upload_id
-      );
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "Photo Retrieved Successfully",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
-  static async apiGetAllUploadID(req, res, next) {
+  // static async apiGetPrintByID(req, res, next) {
+  //   try {
+  //     const _id = req.query._id;
+  //     // const { upload_id } = req.body;
+  //     const token = TokenUtil.cleanToken(req.headers["authorization"]);
+  //     const serviceResponse = await PrintService.getPrintById(
+  //       token,
+  //       _id,
+  //       // upload_id
+  //     );
+  //     if (typeof serviceResponse === "string") {
+  //       res
+  //         .status(200)
+  //         .json({ success: false, data: {}, message: serviceResponse });
+  //     } else {
+  //       res.status(200).json({
+  //         success: true,
+  //         data: serviceResponse,
+  //         message: "Fingerprint Retrieved Successfully",
+  //       });
+  //     }
+  //   } catch (e) {
+  //     res.status(500).json({ success: false, data: {}, message: e.message });
+  //   }
+  // }
+  static async apiGetAllPrints(req, res, next) {
     try {
       // const _id = req.query._id;
       // const { upload_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PhotoService.getAllUploadId(
+      const serviceResponse = await PrintService.getAllPrints(
         token,
         // _id,
         // upload_id
@@ -205,7 +209,32 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Photos Retrieved Successfully",
+          message: "Fingerprint Retrieved Successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+  static async apiGetPrintByHand(req, res, next) {
+    try {
+      const hand = req.query.hand;
+      // const { upload_id } = req.body;
+      const token = TokenUtil.cleanToken(req.headers["authorization"]);
+      const serviceResponse = await PrintService.getPrintByHand(
+        token,
+        hand,
+        // upload_id
+      );
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Fingerprint Retrieved Successfully",
         });
       }
     } catch (e) {
