@@ -6,6 +6,7 @@ import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
 import UploadService from "./upload_service.mjs";
 import { ObjectId } from "mongodb";
+import AwsUtil from "../utility/aws_util.mjs";
 export default class PhotoService {
   static async connectDatabase(client) {
     try {
@@ -15,14 +16,11 @@ export default class PhotoService {
     }
   }
 
-  static async addPhotoInDB(
-    token,
-    upload_id,
-  ) {
-    try {    
-        if (typeof upload_id !== 'string') {
-            throw new Error('upload_id should be a string');
-          }
+  static async addPhotoInDB(token, upload_id) {
+    try {
+      if (typeof upload_id !== "string") {
+        throw new Error("upload_id should be a string");
+      }
 
       const createdOn = new Date();
       const deletedOn = null;
@@ -30,15 +28,10 @@ export default class PhotoService {
       if (!databaseUser) {
         return "User with this token does not exists";
       }
+      const uploadObjId = new ObjectId(upload_id);
       const photoDocument = {
         user_id: databaseUser._id,
-        upload_id: upload_id,
-        // role: "user",
-        // token: authToken,
-        // password: hashedPassword,
-        // google_id: null,
-        // apple_id: null,
-        // last_signin_on: createdOn,
+        upload_id: uploadObjId,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -47,88 +40,112 @@ export default class PhotoService {
 
       const photoData = await PhotoDAO.getPhotoByIDFromDB(addedPhoto);
 
-      const filteredPhoto = this.getFormattedPhoto(photoData);
-
-    //   filteredUser.login_method = "email";
+      let filteredPhoto = this.getFormattedPhoto(photoData);
+      filteredPhoto = await PatternUtil.replaceIdWithUpload(filteredPhoto);
 
       return { photo: filteredPhoto };
     } catch (e) {
       return e.message;
     }
   }
+
   static getFormattedPhoto(rawPhoto) {
     const filteredPhoto = PatternUtil.filterParametersFromObject(rawPhoto, [
-      "_id",
+      "user_id",
       "created_on",
       "deleted_on",
     ]);
     return filteredPhoto;
   }
-  static async updateUploadId(token, _id,old_upload_id,upload_id) {
+
+  // static async updateUploadId(token, _id, old_upload_id, upload_id) {
+  //   try {
+  //     // let databaseUser = await this.getUserFromToken(token);
+  //     let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
+  //     const processedUpdateFields = UserService.convertToDotNotation({
+  //       upload_id: upload_id,
+  //     });
+  //     await UploadService.deleteUpload(new ObjectId(old_upload_id));
+
+  //     retrievedPhoto = await PhotoDAO.updateUploadidFieldByID(
+  //       retrievedPhoto._id,
+  //       processedUpdateFields
+  //     );
+
+  //     const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(
+  //       retrievedPhoto._id
+  //     );
+  //     const filteredPhoto = this.getFormattedPhoto(updatedPhoto);
+
+  //     return { photo: filteredPhoto };
+  //   } catch (e) {
+  //     return e.message;
+  //   }
+  // }
+
+  // static async getUploadId(token, _id) {
+  //   try {
+  //     // let databaseUser = await this.getUserFromToken(token);
+  //     let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
+
+  //     // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
+  //     const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
+
+  //     return { photo: filteredPhoto };
+  //   } catch (e) {
+  //     return e.message;
+  //   }
+  // }
+
+  static async deletePhoto(token, photoId) {
     try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
-      const processedUpdateFields = UserService.convertToDotNotation({
-        upload_id: upload_id,
-      });
-      await UploadService.deleteUpload(new ObjectId(old_upload_id))
+      const photoObjId = new ObjectId(photoId);
+      const [databaseUser, databasePhoto] = await Promise.all([
+        UserService.getUserFromToken(token),
+        PhotoDAO.getPhotoByIDFromDB(photoObjId),
+      ]);
 
-      retrievedPhoto = await PhotoDAO.updateUploadidFieldByID(
-        retrievedPhoto._id,
-        processedUpdateFields
-      );
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+      if (!databasePhoto) {
+        return "Photo with this id does not exist";
+      }
+      if (databasePhoto.user_id.toString() !== databaseUser._id.toString()) {
+        return "You do not have any photo with this id";
+      }
+      const deleteFromAWS = await AwsUtil.deleteFromS3(databasePhoto.key);
+      let retrievedPhotos = await PhotoDAO.deletePhotosByID(photoObjId);
 
-      const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      const filteredPhoto = this.getFormattedPhoto(updatedPhoto);
-
-      return { photo: filteredPhoto };
+      return {};
     } catch (e) {
       return e.message;
     }
   }
 
-  static async getUploadId(token, _id,) {
+  static async getAllPhotos(token) {
     try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
-   
-
-      // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
-
-      return { photo: filteredPhoto };
-    } catch (e) {
-      return e.message;
-    }
-  }
-  static async getAllUploadId(token,) {
-    try {
-      // let databaseUser = await this.getUserFromToken(token);
       let databaseUser = await UserService.getUserFromToken(token);
-    if (!databaseUser) {
-      return "User with this token does not exist";
-    }
-      let retrievedPhoto = await PhotoDAO.getAllPhotosFromDB(databaseUser._id);
-   
-      if (!retrievedPhoto || retrievedPhoto.length === 0) {
-        return "No Photos found";
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+
+      let retrievedPhotos = await PhotoDAO.getAllPhotosFromDB(databaseUser._id);
+
+      if (!retrievedPhotos || retrievedPhotos.length === 0) {
+        return { photos: [] };
       } else {
-        for (let i = 0; i < retrievedPhoto.length; i++) {
-          const filteredPrint = PatternUtil.filterParametersFromObject(
-            retrievedPhoto[i],
-            ["created_on", "deleted_on"]
-          );
+        const retrievedPhotosPromises = retrievedPhotos.map(async (photo) => {
+          let filteredPrint = this.getFormattedPhoto(photo);
+          filteredPrint = await PatternUtil.replaceIdWithUpload(filteredPrint);
+          return filteredPrint;
+        });
+        retrievedPhotos = await Promise.all(retrievedPhotosPromises);
 
-          retrievedPhoto[i] = filteredPrint;
-        }
-      // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      // const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
-
-      return { photo: retrievedPhoto };
-    }} catch (e) {
+        return { photos: retrievedPhotos };
+      }
+    } catch (e) {
       return e.message;
     }
   }
-
-
 }

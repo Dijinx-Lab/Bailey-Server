@@ -11,25 +11,31 @@ const baseRoute = "/photos";
 
 //api routes
 router
-  .route(baseRoute + "/store")
+  .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware([
-      "upload_id",
-    ]),
+    checkRequiredFieldsMiddleware(["upload_id"]),
     checkTokenMiddleware,
     PhotosController.apiAddPhoto
   );
 
-  router
-  .route(baseRoute + "/edit")
-  .put(
-    checkRequiredFieldsMiddleware([
-    "_id",
-  ]),checkTokenMiddleware, PhotosController.apiUpdateUploadID);
-  
-  
-  router
-  .route(baseRoute + "/get")
-  .get(checkTokenMiddleware, PhotosController.apiGetAllUploadID);
+// router
+//   .route(baseRoute + "/edit")
+//   .put(
+//     checkRequiredFieldsMiddleware(["_id"]),
+//     checkTokenMiddleware,
+//     PhotosController.apiUpdateUploadID
+//   );
+
+// router
+//   .route(baseRoute + "/get")
+//   .get(checkTokenMiddleware, PhotosController.apiGetAllUploadID);
+
+router
+  .route(baseRoute + "/list")
+  .get(checkTokenMiddleware, PhotosController.apiGetAllPhotos);
+
+router
+  .route(baseRoute + "/delete")
+  .delete(checkTokenMiddleware, PhotosController.apiDeletePhotos);
 
 export default router;

@@ -28,7 +28,6 @@ export default class PhotoDAO {
   }
   static async getPhotoByIDFromDB(id) {
     try {
-
       const photo = await photocon.findOne({ _id: new ObjectId(id) });
       return photo;
     } catch (e) {
@@ -36,16 +35,23 @@ export default class PhotoDAO {
       return null;
     }
   }
+
   static async getAllPhotosFromDB(user_id) {
     try {
-
-      const photo = await photocon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
-      return photo;
+      const photos = await photocon
+        .find({
+          user_id: user_id,
+          deleted_on: { $eq: null },
+        })
+        .sort({ created_on: 1 })
+        .toArray();
+      return photos;
     } catch (e) {
-      console.error(`Unable to get photo by ID: ${e}`);
+      console.error(`Unable to get photos by ID: ${e}`);
       return null;
     }
   }
+
   static async updateUploadidFieldByID(id, fieldsToUpdate) {
     try {
       const photo = await photocon.findOneAndUpdate(
@@ -63,6 +69,15 @@ export default class PhotoDAO {
   static async deletePhotosByUserID(user_id) {
     try {
       const result = await photocon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete photo: ${e}`);
+    }
+  }
+
+  static async deletePhotosByID(id) {
+    try {
+      const result = await photocon.deleteOne({ _id: id });
       return result.deletedCount > 0;
     } catch (e) {
       throw new Error(`Unable to delete photo: ${e}`);

@@ -1,3 +1,5 @@
+import UploadService from "../services/upload_service.mjs";
+
 const PatternUtil = {
   checkPasswordLength: (password) => {
     return password.length > 8;
@@ -42,6 +44,13 @@ const PatternUtil = {
       renamedObject[newKey] = object[key];
     });
     return renamedObject;
+  },
+
+  replaceIdWithUpload: async (object) => {
+    let uploadObj = await UploadService.getUploadById(object.upload_id);
+    object.upload = uploadObj;
+    delete object.upload_id;
+    return object;
   },
 };
 

@@ -2,6 +2,7 @@ import UploadDAO from "../data/upload_dao.mjs";
 import path from "path";
 import AwsUtil from "../utility/aws_util.mjs";
 import UserService from "./user_service.mjs";
+import PatternUtil from "../utility/pattern_util.mjs";
 
 export default class UploadService {
   static async connectDatabase(client) {
@@ -9,6 +10,16 @@ export default class UploadService {
       await UploadDAO.injectDB(client);
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
+    }
+  }
+
+  static async getUploadById(uploadId) {
+    try {
+      let databaseUpload = await UploadDAO.getUploadByIDFromDB(uploadId);
+      databaseUpload = this.getFormattedUpload(databaseUpload);
+      return databaseUpload;
+    } catch (e) {
+      return e.message;
     }
   }
 
@@ -41,12 +52,23 @@ export default class UploadService {
 
       const addedUploadId = await UploadDAO.addUploadToDB(document);
 
-      const addedUpload = await UploadDAO.getUploadByIDFromDB(addedUploadId);
+      let addedUpload = await UploadDAO.getUploadByIDFromDB(addedUploadId);
+
+      addedUpload = this.getFormattedUpload(addedUpload);
 
       return { upload: addedUpload };
     } catch (e) {
       return e.message;
     }
+  }
+
+  static getFormattedUpload(rawUpload) {
+    const filteredPhoto = PatternUtil.filterParametersFromObject(rawUpload, [
+      "user_id",
+      "created_on",
+      "deleted_on",
+    ]);
+    return filteredPhoto;
   }
 
   static async deleteUpload(uploadId) {
