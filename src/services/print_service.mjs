@@ -54,12 +54,14 @@ export default class PrintService {
       if (existingPrint) {
         return "Print already allotted for this finger";
       }
-      const uploadObjId = new ObjectId(upload_id);
+      const isSkipped = upload_id === "skipped";
+      const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
       const createdOn = new Date();
       const deletedOn = null;
       const printDocument = {
         user_id: databaseUser._id,
         upload_id: uploadObjId,
+        is_skipped: isSkipped,
         hand: hand,
         finger: finger,
         created_on: createdOn,
@@ -90,7 +92,8 @@ export default class PrintService {
   static async updatePrint(printId, upload_id) {
     try {
       const printObjId = new ObjectId(printId);
-      const uploadObjId = new ObjectId(upload_id);
+      const isSkipped = upload_id === "skipped";
+      const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
       let databasePrint = await PrintsDAO.getPrintByIDFromDB(printObjId);
 
       if (!databasePrint) {
@@ -101,12 +104,15 @@ export default class PrintService {
 
       databasePrint = await PrintsDAO.updatePrintsFieldByID(printObjId, {
         upload_id: uploadObjId,
+        is_skipped: isSkipped,
       });
 
-      await UploadService.deleteUpload(oldUploadId);
+      if (oldUploadId) {
+        await UploadService.deleteUpload(oldUploadId);
+      }
 
       const updatedPrint = await PrintsDAO.getPrintByIDFromDB(printObjId);
-      console.log(updatedPrint);
+
       let filteredPrint = this.getFormattedPrint(updatedPrint);
       filteredPrint = await PatternUtil.replaceIdWithUpload(filteredPrint);
 
@@ -137,7 +143,34 @@ export default class PrintService {
 
       let retrievedPhotos = await PrintsDAO.deletePrintByID(printObjId);
 
-      await UploadService.deleteUpload(oldUploadId);
+      if (oldUploadId) {
+        await UploadService.deleteUpload(oldUploadId);
+      }
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async deleteAllUserPrints(userId) {
+    try {
+      const databasePhotos = await PrintsDAO.getAllPrints(userId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await PrintsDAO.deletePrintsByUserID(userId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        if (oldUploadId) {
+          await UploadService.deleteUpload(oldUploadId);
+        }
+      });
+
+      await Promise.all(deleteUploadPromises);
 
       return {};
     } catch (e) {

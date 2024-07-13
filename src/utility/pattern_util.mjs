@@ -47,9 +47,11 @@ const PatternUtil = {
   },
 
   replaceIdWithUpload: async (object) => {
-    let uploadObj = await UploadService.getUploadById(object.upload_id);
-    object.upload = uploadObj;
-    delete object.upload_id;
+    if (object.upload_id) {
+      let uploadObj = await UploadService.getUploadById(object.upload_id);
+      object.upload = uploadObj;
+      delete object.upload_id;
+    }
     return object;
   },
 };

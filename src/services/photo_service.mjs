@@ -83,6 +83,29 @@ export default class PhotoService {
     }
   }
 
+  static async deleteAllUserPhotos(userId) {
+    try {
+      const databasePhotos = await PhotoDAO.getAllPhotosFromDB(userId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await PhotoDAO.deletePhotosByUserID(userId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        await UploadService.deleteUpload(oldUploadId);
+      });
+
+      await Promise.all(deleteUploadPromises);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
   static async getAllPhotos(token) {
     try {
       let databaseUser = await UserService.getUserFromToken(token);

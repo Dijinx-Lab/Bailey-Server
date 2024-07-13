@@ -40,7 +40,7 @@ export default class PrintsDAO {
       const print = await printcon
         .find({ user_id: user_id, deleted_on: { $eq: null } })
         .toArray();
-      // const print = await printcon.findOne({ _id: new ObjectId(id) });
+
       return print;
     } catch (e) {
       console.error(`Unable to get print by ID: ${e}`);

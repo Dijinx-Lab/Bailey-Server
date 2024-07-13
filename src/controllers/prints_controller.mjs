@@ -31,8 +31,9 @@ export default class PrintsController {
   static async apiUpdatePrint(req, res, next) {
     try {
       const { id } = req.query;
+      const { upload_id } = req.body;
 
-      const serviceResponse = await PrintService.deletePrint(id, id);
+      const serviceResponse = await PrintService.updatePrint(id, upload_id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)

@@ -115,4 +115,27 @@ export default class WritingService {
       return e.message;
     }
   }
+
+  static async deleteAllUserWritings(userId) {
+    try {
+      const databasePhotos = await WritingDAO.getAllWritingFromDB(userId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await WritingDAO.deleteAllUserWritings(userId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        await UploadService.deleteUpload(oldUploadId);
+      });
+
+      await Promise.all(deleteUploadPromises);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
 }

@@ -149,7 +149,8 @@ export default class UserController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "User Deleted successfully",
+          message:
+            "Account and all your data deleted from Bailey & Bailey. Good bye 👋",
         });
       }
     } catch (e) {

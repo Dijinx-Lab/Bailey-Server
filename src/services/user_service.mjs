@@ -7,6 +7,10 @@ import PrintsDAO from "../data/prints_dao.mjs";
 import PhotoDAO from "../data/photo_dao.mjs";
 import WritingDAO from "../data/writing_dao.mjs";
 import UploadService from "./upload_service.mjs";
+import PhotoService from "./photo_service.mjs";
+import PrintService from "./print_service.mjs";
+import WritingService from "./writing_service.mjs";
+
 export default class UserService {
   static async connectDatabase(client) {
     try {
@@ -277,9 +281,9 @@ export default class UserService {
               throw new Error("Invalid email format.");
             }
             const emailExists = await UserDAO.getUserByEmailFromDB(value);
-          if (emailExists) {
-            throw new Error("Email already exists.");
-          }
+            if (emailExists) {
+              throw new Error("Email already exists.");
+            }
           }
           validUpdateFields[field] = value;
         }
@@ -562,36 +566,14 @@ export default class UserService {
       if (!databaseUser) {
         return "No such user found";
       }
-      const deletedUser = await UserDAO.deleteUserByID(databaseUser._id);
-
-      if (!deletedUser) {
-        return "Failed to delete user";
-      }
 
       const [prints, photos, writings] = await Promise.all([
-        PrintsDAO.getAllPrints(databaseUser._id),
-        PhotoDAO.getAllPhotosFromDB(databaseUser._id),
-        WritingDAO.getAllWritingFromDB(databaseUser._id)
+        PrintService.deleteAllUserPrints(databaseUser._id),
+        PhotoService.deleteAllUserPhotos(databaseUser._id),
+        WritingService.deleteAllUserWritings(databaseUser._id),
       ]);
-  
-      // Collect all upload IDs from prints, photos, and writings
-      const uploadIds = [
-        ...prints.map(print => print.upload_id),
-        ...photos.map(photo => photo.upload_id),
-        ...writings.map(writing => writing.upload_id)
-      ];
-  
-      // Delete uploads from S3 and database
-      const deleteUploadPromises = uploadIds.map(uploadId => UploadService.deleteUpload(uploadId));
-      await Promise.all(deleteUploadPromises);
-  
-      // Delete prints, photos, and writings from the database
-      await Promise.all([
-        PrintsDAO.deletePrintsByUserID(databaseUser._id),
-        PhotoDAO.deletePhotosByUserID(databaseUser._id),
-        WritingDAO.deleteWritingsByUserID(databaseUser._id)
-      ]);
-  
+
+      const deletedUser = await UserDAO.deleteUserByID(databaseUser._id);
 
       return {};
     } catch (e) {
