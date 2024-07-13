@@ -8,7 +8,9 @@ export default class WritingDAO {
       return;
     }
     try {
-      writingcon = conn.db(databaseConfig.database.dbName).collection("writings");
+      writingcon = conn
+        .db(databaseConfig.database.dbName)
+        .collection("writings");
     } catch (e) {
       console.error(`Unable to establish a collection handle: ${e}`);
     }
@@ -28,7 +30,6 @@ export default class WritingDAO {
   }
   static async getWritingByIDFromDB(id) {
     try {
-
       const photo = await writingcon.findOne({ _id: new ObjectId(id) });
       return photo;
     } catch (e) {
@@ -36,16 +37,23 @@ export default class WritingDAO {
       return null;
     }
   }
+
   static async getAllWritingFromDB(user_id) {
     try {
-
-      const photo = await writingcon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
-      return photo;
+      const photos = await writingcon
+        .find({
+          user_id: user_id,
+          deleted_on: { $eq: null },
+        })
+        .sort({ created_on: 1 })
+        .toArray();
+      return photos;
     } catch (e) {
-      console.error(`Unable to get photo by ID: ${e}`);
+      console.error(`Unable to get photos by ID: ${e}`);
       return null;
     }
   }
+
   static async updateUploadidFieldByID(id, fieldsToUpdate) {
     try {
       const photo = await writingcon.findOneAndUpdate(
@@ -57,6 +65,15 @@ export default class WritingDAO {
     } catch (e) {
       console.error(`Unable to update photo field: ${e}`);
       return null;
+    }
+  }
+
+  static async deleteWritingByID(id) {
+    try {
+      const result = await writingcon.deleteOne({ _id: id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete writing: ${e}`);
     }
   }
 

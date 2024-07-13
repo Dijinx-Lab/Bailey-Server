@@ -17,30 +17,18 @@ export default class WritingService {
     }
   }
 
-  static async addWritingInDB(
-    token,
-    upload_id,
-  ) {
-    try {    
-        if (typeof upload_id !== 'string') {
-            throw new Error('upload_id should be a string');
-          }
-
-      const createdOn = new Date();
-      const deletedOn = null;
+  static async addWritingInDB(token, upload_id) {
+    try {
       let databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
         return "User with this token does not exists";
       }
+      const uploadObjId = new ObjectId(upload_id);
+      const createdOn = new Date();
+      const deletedOn = null;
       const writingDocument = {
         user_id: databaseUser._id,
-        upload_id: upload_id,
-        // role: "user",
-        // token: authToken,
-        // password: hashedPassword,
-        // google_id: null,
-        // apple_id: null,
-        // last_signin_on: createdOn,
+        upload_id: uploadObjId,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -49,87 +37,82 @@ export default class WritingService {
 
       const writingData = await WritingDAO.getWritingByIDFromDB(addedWriting);
 
-      const filteredWriting = this.getFormattedWriting(writingData);
+      let filteredWriting = this.getFormattedWriting(writingData);
 
-    //   filteredUser.login_method = "email";
+      filteredWriting = await PatternUtil.replaceIdWithUpload(filteredWriting);
 
-      return { writing: filteredWriting };
+      return { handwriting: filteredWriting };
     } catch (e) {
       return e.message;
     }
   }
+
   static getFormattedWriting(rawWriting) {
     const filteredWriting = PatternUtil.filterParametersFromObject(rawWriting, [
-      "_id",
+      "user_id",
       "created_on",
       "deleted_on",
     ]);
     return filteredWriting;
   }
-  static async updateUploadId(token, _id,old_upload_id,upload_id) {
-    try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedWriting = await WritingDAO.getWritingByIDFromDB(_id);
-      const processedUpdateFields = UserService.convertToDotNotation({
-        upload_id: upload_id,
-      });
-      await UploadService.deleteUpload(new ObjectId(old_upload_id))
 
-      retrievedWriting = await WritingDAO.updateUploadidFieldByID(
-        retrievedWriting._id,
-        processedUpdateFields
+  static async getAllHandwritings(token) {
+    try {
+      let databaseUser = await UserService.getUserFromToken(token);
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+      let retrievedWritings = await WritingDAO.getAllWritingFromDB(
+        databaseUser._id
       );
 
-      const updatedWriting = await WritingDAO.getWritingByIDFromDB(retrievedWriting._id);
-      const filteredWriting = this.getFormattedWriting(updatedWriting);
-
-      return { writing: filteredWriting };
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-  static async getUploadId(token, _id,) {
-    try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
-   
-
-      // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      const filteredPhoto = this.getFormattedWriting(retrievedPhoto);
-
-      return { photo: filteredPhoto };
-    } catch (e) {
-      return e.message;
-    }
-  }
-  static async getAllUploadId(token,) {
-    try {
-        let databaseUser = await UserService.getUserFromToken(token);
-        if (!databaseUser) {
-          return "User with this token does not exist";
-        }
-      let retrievedWriting = await WritingDAO.getAllWritingFromDB(databaseUser.user_id);
-   
-      if (!retrievedWriting || retrievedPhoto.length === 0) {
-        return "No Writings found";
+      if (!retrievedWritings || retrievedWritings.length === 0) {
+        return { handwritings: [] };
       } else {
-        for (let i = 0; i < retrievedWriting.length; i++) {
-          const filteredWriting = PatternUtil.filterParametersFromObject(
-            retrievedWriting[i],
-            ["created_on", "deleted_on"]
-          );
+        const retrievedWritingsPromises = retrievedWritings.map(
+          async (writing) => {
+            let filteredWriting = this.getFormattedWriting(writing);
+            filteredWriting = await PatternUtil.replaceIdWithUpload(
+              filteredWriting
+            );
+            return filteredWriting;
+          }
+        );
+        retrievedWritings = await Promise.all(retrievedWritingsPromises);
 
-          retrievedWriting[i] = filteredWriting;
-        }
-      // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      // const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
-
-      return { writing: retrievedWriting };
-    }} catch (e) {
+        return { handwritings: retrievedWritings };
+      }
+    } catch (e) {
       return e.message;
     }
   }
 
+  static async deleteWriting(token, writingId) {
+    try {
+      const writingObjId = new ObjectId(writingId);
+      const [databaseUser, databaseWriting] = await Promise.all([
+        UserService.getUserFromToken(token),
+        WritingDAO.getWritingByIDFromDB(writingObjId),
+      ]);
 
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+      if (!databaseWriting) {
+        return "Photo with this id does not exist";
+      }
+      if (databaseWriting.user_id.toString() !== databaseUser._id.toString()) {
+        return "You do not have any photo with this id";
+      }
+      const oldUploadId = databaseWriting.upload_id;
+
+      let retrievedPhotos = await WritingDAO.deleteWritingByID(writingObjId);
+
+      await UploadService.deleteUpload(oldUploadId);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
 }

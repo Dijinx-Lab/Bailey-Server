@@ -7,6 +7,20 @@ import UserService from "./user_service.mjs";
 import PrintsDAO from "../data/prints_dao.mjs";
 import UploadService from "./upload_service.mjs";
 import { ObjectId } from "mongodb";
+
+const hands = Object.freeze({
+  LEFT: "left",
+  RIGHT: "right",
+});
+
+const fingers = Object.freeze({
+  PINKY: "pinky",
+  RING: "ring",
+  MIDDLE: "middle",
+  INDEX: "index",
+  THUMB: "thumb",
+});
+
 export default class PrintService {
   static async connectDatabase(client) {
     try {
@@ -16,95 +30,122 @@ export default class PrintService {
     }
   }
 
-  static async addPrintInDB(
-    token,
-    finger,
-    hand,
-    upload_id
-  ) {
+  static async addPrint(token, finger, hand, upload_id) {
     try {
-      if (typeof upload_id !== 'string') {
-        throw new Error('upload_id should be a string');
+      if (!Object.values(fingers).includes(finger)) {
+        return `Finger is not of valid type, please choose from: ${Object.values(
+          fingers
+        ).join(", ")}`;
       }
-
-      const createdOn = new Date();
-      const deletedOn = null;
+      if (!Object.values(hands).includes(hand)) {
+        return `Hand is not of valid type, please choose from: ${Object.values(
+          hands
+        ).join(", ")}`;
+      }
       let databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
         return "User with this token does not exists";
       }
-      const existingPrint = await PrintsDAO.getPrintByUserHandFinger(databaseUser._id, hand, finger);
+      const existingPrint = await PrintsDAO.getPrintByUserHandFinger(
+        databaseUser._id,
+        hand,
+        finger
+      );
       if (existingPrint) {
-        throw new Error('Print already allotted');
+        return "Print already allotted for this finger";
       }
+      const uploadObjId = new ObjectId(upload_id);
+      const createdOn = new Date();
+      const deletedOn = null;
       const printDocument = {
         user_id: databaseUser._id,
-        finger: finger,
+        upload_id: uploadObjId,
         hand: hand,
-        upload_id: upload_id,
-
+        finger: finger,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
 
       const addedPrint = await PrintsDAO.addPrintsToDB(printDocument);
 
-      const printData = await PrintsDAO.getPrintsByIDFromDB(addedPrint);
+      const printData = await PrintsDAO.getPrintByIDFromDB(addedPrint);
 
-      const filteredPrint = this.getFormattedPrint(printData);
-
-      return { print: filteredPrint };
+      let filteredPrint = this.getFormattedPrint(printData);
+      filteredPrint = await PatternUtil.replaceIdWithUpload(filteredPrint);
+      return { fingerprint: filteredPrint };
     } catch (e) {
       return e.message;
     }
   }
+
   static getFormattedPrint(rawPrint) {
     const filteredPrint = PatternUtil.filterParametersFromObject(rawPrint, [
-      "_id",
+      "user_id",
       "created_on",
       "deleted_on",
     ]);
     return filteredPrint;
   }
-  static async updatePrint(token, _id,old_upload_id, upload_id) {
+
+  static async updatePrint(printId, upload_id) {
     try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPrint = await PrintsDAO.getPrintsByIDFromDB(_id);
-      const processedUpdateFields = UserService.convertToDotNotation({
-        // hand: hand,
-        // finger: finger,
-        upload_id: upload_id,
+      const printObjId = new ObjectId(printId);
+      const uploadObjId = new ObjectId(upload_id);
+      let databasePrint = await PrintsDAO.getPrintByIDFromDB(printObjId);
+
+      if (!databasePrint) {
+        return "No fingerprint found for this id";
+      }
+
+      const oldUploadId = databasePrint.upload_id;
+
+      databasePrint = await PrintsDAO.updatePrintsFieldByID(printObjId, {
+        upload_id: uploadObjId,
       });
-       await UploadService.deleteUpload(new ObjectId(old_upload_id))
 
-      retrievedPrint = await PrintsDAO.updatePrintsFieldByID(
-        retrievedPrint._id,
-        processedUpdateFields
-      );
-      const updatedPrint = await PrintsDAO.getPrintsByIDFromDB(retrievedPrint._id);
-      const filteredPrint = this.getFormattedPrint(updatedPrint);
+      await UploadService.deleteUpload(oldUploadId);
 
-      return { print: filteredPrint };
+      const updatedPrint = await PrintsDAO.getPrintByIDFromDB(printObjId);
+      console.log(updatedPrint);
+      let filteredPrint = this.getFormattedPrint(updatedPrint);
+      filteredPrint = await PatternUtil.replaceIdWithUpload(filteredPrint);
+
+      return { fingerprint: filteredPrint };
     } catch (e) {
       return e.message;
     }
   }
 
-  // static async getPrintById(token, _id,) {
-  //   try {
-  //     // let databaseUser = await this.getUserFromToken(token);
-  //     let retrievedPrint = await PrintsDAO.getPrintsByIDFromDB(_id);
+  static async deletePrint(token, printId) {
+    try {
+      const printObjId = new ObjectId(printId);
+      const [databaseUser, databasePrint] = await Promise.all([
+        UserService.getUserFromToken(token),
+        PrintsDAO.getPrintByIDFromDB(printObjId),
+      ]);
 
+      if (!databaseUser) {
+        return "User with this token does not exist";
+      }
+      if (!databasePrint) {
+        return "Photo with this id does not exist";
+      }
+      if (databasePrint.user_id.toString() !== databaseUser._id.toString()) {
+        return "You do not have any fingerprint with this id";
+      }
+      const oldUploadId = databasePrint.upload_id;
 
-  //     // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-  //     const filteredPrint = this.getFormattedPrint(retrievedPrint);
+      let retrievedPhotos = await PrintsDAO.deletePrintByID(printObjId);
 
-  //     return { print: filteredPrint };
-  //   } catch (e) {
-  //     return e.message;
-  //   }
-  // }
-  static async getAllPrints() {
+      await UploadService.deleteUpload(oldUploadId);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllPrints(token) {
     try {
       let databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
@@ -112,60 +153,37 @@ export default class PrintService {
       }
       let retrievedPrint = await PrintsDAO.getAllPrints(databaseUser._id);
 
-
-      if (!retrievedPrint || retrievedPhoto.length === 0) {
-        return "No fingerprints found";
+      if (!retrievedPrint || retrievedPrint.length === 0) {
+        return {
+          left_hand: [],
+          right_hand: [],
+        };
       } else {
         let leftHandPrints = [];
         let rightHandPrints = [];
-        for (let i = 0; i < retrievedPrint.length; i++) {
-          const filteredPrint = PatternUtil.filterParametersFromObject(
-            retrievedPrint[i],
-            ["created_on", "deleted_on"]
-          );
-          if (retrievedPrint[i].hand === "left") {
-            leftHandPrints.push(filteredPrint);
-          } else if (retrievedPrint[i].hand === "right") {
-            rightHandPrints.push(filteredPrint);
-          }
-          // retrievedPrint[i] = filteredPrint;
-        }
+
+        await Promise.all(
+          retrievedPrint.map(async (print) => {
+            let filteredPrint = this.getFormattedPrint(print);
+            filteredPrint = await PatternUtil.replaceIdWithUpload(
+              filteredPrint
+            );
+
+            if (print.hand === "left") {
+              leftHandPrints.push(filteredPrint);
+            } else if (print.hand === "right") {
+              rightHandPrints.push(filteredPrint);
+            }
+          })
+        );
 
         return {
-          leftHandPrints: leftHandPrints,
-          rightHandPrints: rightHandPrints
+          left_hand: leftHandPrints,
+          right_hand: rightHandPrints,
         };
       }
     } catch (e) {
       return e.message;
     }
   }
-  static async getPrintByHand(token, hand,) {
-    try {
-      // let databaseUser = await this.getUserFromToken(token);
-      let retrievedPrint = await PrintsDAO.getPrintsByHandFromDB(hand);
-
-
-      // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-      //   const filteredPrint = this.getFormattedPrint(retrievedPrint);
-      if (!retrievedPrint) {
-        return "No fingerprints found";
-      } else {
-        for (let i = 0; i < retrievedPrint.length; i++) {
-          const filteredPrint = PatternUtil.filterParametersFromObject(
-            retrievedPrint[i],
-            ["created_on", "deleted_on"]
-          );
-
-          retrievedPrint[i] = filteredPrint;
-        }
-
-        return { print: retrievedPrint };
-      }
-    } catch (e) {
-      return e.message;
-    }
-  }
-
-
 }

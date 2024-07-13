@@ -18,18 +18,6 @@ router
     PhotosController.apiAddPhoto
   );
 
-// router
-//   .route(baseRoute + "/edit")
-//   .put(
-//     checkRequiredFieldsMiddleware(["_id"]),
-//     checkTokenMiddleware,
-//     PhotosController.apiUpdateUploadID
-//   );
-
-// router
-//   .route(baseRoute + "/get")
-//   .get(checkTokenMiddleware, PhotosController.apiGetAllUploadID);
-
 router
   .route(baseRoute + "/list")
   .get(checkTokenMiddleware, PhotosController.apiGetAllPhotos);

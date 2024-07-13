@@ -11,30 +11,23 @@ const baseRoute = "/writings";
 
 //api routes
 router
-  .route(baseRoute + "/store")
+  .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware([
-      "upload_id",
-    ]),
+    checkRequiredFieldsMiddleware(["upload_id"]),
     checkTokenMiddleware,
     WritingsController.apiAddWritings
   );
 
+router
+  .route(baseRoute + "/delete")
+  .delete(
+    checkRequiredFieldsMiddleware(["id"]),
+    checkTokenMiddleware,
+    WritingsController.apiDeleteWriting
+  );
 
-  router
-  .route(baseRoute + "/edit")
-  .put(
-    checkRequiredFieldsMiddleware([
-    "_id",
-  ]),checkTokenMiddleware, WritingsController.apiUpdateUploadID);
-  
-  
-  router
-  .route(baseRoute + "/get")
+router
+  .route(baseRoute + "/list")
   .get(checkTokenMiddleware, WritingsController.apiGetAllWritings);
-
-//   router
-//   .route(baseRoute + "/get-by-hand")
-//   .get(checkTokenMiddleware, PrintsController.apiGetPrintByHand);
 
 export default router;

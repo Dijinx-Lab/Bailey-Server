@@ -26,10 +26,9 @@ export default class PrintsDAO {
       return null;
     }
   }
-  static async getPrintsByIDFromDB(id) {
+  static async getPrintByIDFromDB(id) {
     try {
-      // const print = await printcon.find({ deleted_on: { $eq: null } }).toArray();
-      const print = await printcon.findOne({ _id: new ObjectId(id) });
+      const print = await printcon.findOne({ _id: id });
       return print;
     } catch (e) {
       console.error(`Unable to get print by ID: ${e}`);
@@ -38,7 +37,9 @@ export default class PrintsDAO {
   }
   static async getAllPrints(user_id) {
     try {
-      const print = await printcon.find({user_id: user_id, deleted_on: { $eq: null } }).toArray();
+      const print = await printcon
+        .find({ user_id: user_id, deleted_on: { $eq: null } })
+        .toArray();
       // const print = await printcon.findOne({ _id: new ObjectId(id) });
       return print;
     } catch (e) {
@@ -66,7 +67,7 @@ export default class PrintsDAO {
         user_id: user_id,
         hand: hand,
         finger: finger,
-        deleted_on: null // assuming that deleted prints have a non-null deleted_on field
+        deleted_on: null, // assuming that deleted prints have a non-null deleted_on field
       });
       return result;
     } catch (e) {
@@ -75,11 +76,20 @@ export default class PrintsDAO {
   }
   static async getPrintsByHandFromDB(hand) {
     try {
-      const prints = await printcon.find({ hand: hand }).toArray();;
+      const prints = await printcon.find({ hand: hand }).toArray();
       return prints;
     } catch (e) {
       console.error(`Unable to get prints by hand: ${e}`);
       return null;
+    }
+  }
+
+  static async deletePrintByID(id) {
+    try {
+      const result = await printcon.deleteOne({ _id: id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete photo: ${e}`);
     }
   }
 

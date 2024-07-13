@@ -12,32 +12,31 @@ const baseRoute = "/prints";
 
 //api routes
 router
-  .route(baseRoute + "/store")
+  .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware([
-      "finger",
-      "hand",
-      "upload_id"
-    ]),
+    checkRequiredFieldsMiddleware(["finger", "hand", "upload_id"]),
     checkTokenMiddleware,
     PrintsController.apiAddFinger
   );
 
-  router
+router
   .route(baseRoute + "/edit")
   .put(
-    checkRequiredFieldsMiddleware([
-    "_id",
-    "upload_id"
-  ]),checkTokenMiddleware, PrintsController.apiUpdatePrint);
-  
-  
-  router
-  .route(baseRoute + "/get")
-  .get(checkTokenMiddleware, PrintsController.apiGetAllPrints);
+    checkRequiredFieldsMiddleware(["id", "upload_id"]),
+    checkTokenMiddleware,
+    PrintsController.apiUpdatePrint
+  );
 
-  router
-  .route(baseRoute + "/get-by-hand")
-  .get(checkTokenMiddleware, PrintsController.apiGetPrintByHand);
+router
+  .route(baseRoute + "/delete")
+  .delete(
+    checkRequiredFieldsMiddleware(["id"]),
+    checkTokenMiddleware,
+    PrintsController.apiDeletePrint
+  );
+
+router
+  .route(baseRoute + "/list")
+  .get(checkTokenMiddleware, PrintsController.apiGetAllPrints);
 
 export default router;

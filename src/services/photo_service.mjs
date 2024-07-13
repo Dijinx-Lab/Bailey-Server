@@ -18,10 +18,6 @@ export default class PhotoService {
 
   static async addPhotoInDB(token, upload_id) {
     try {
-      if (typeof upload_id !== "string") {
-        throw new Error("upload_id should be a string");
-      }
-
       const createdOn = new Date();
       const deletedOn = null;
       let databaseUser = await UserService.getUserFromToken(token);
@@ -58,45 +54,6 @@ export default class PhotoService {
     return filteredPhoto;
   }
 
-  // static async updateUploadId(token, _id, old_upload_id, upload_id) {
-  //   try {
-  //     // let databaseUser = await this.getUserFromToken(token);
-  //     let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
-  //     const processedUpdateFields = UserService.convertToDotNotation({
-  //       upload_id: upload_id,
-  //     });
-  //     await UploadService.deleteUpload(new ObjectId(old_upload_id));
-
-  //     retrievedPhoto = await PhotoDAO.updateUploadidFieldByID(
-  //       retrievedPhoto._id,
-  //       processedUpdateFields
-  //     );
-
-  //     const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(
-  //       retrievedPhoto._id
-  //     );
-  //     const filteredPhoto = this.getFormattedPhoto(updatedPhoto);
-
-  //     return { photo: filteredPhoto };
-  //   } catch (e) {
-  //     return e.message;
-  //   }
-  // }
-
-  // static async getUploadId(token, _id) {
-  //   try {
-  //     // let databaseUser = await this.getUserFromToken(token);
-  //     let retrievedPhoto = await PhotoDAO.getPhotoByIDFromDB(_id);
-
-  //     // const updatedPhoto = await PhotoDAO.getPhotoByIDFromDB(retrievedPhoto._id);
-  //     const filteredPhoto = this.getFormattedPhoto(retrievedPhoto);
-
-  //     return { photo: filteredPhoto };
-  //   } catch (e) {
-  //     return e.message;
-  //   }
-  // }
-
   static async deletePhoto(token, photoId) {
     try {
       const photoObjId = new ObjectId(photoId);
@@ -114,8 +71,11 @@ export default class PhotoService {
       if (databasePhoto.user_id.toString() !== databaseUser._id.toString()) {
         return "You do not have any photo with this id";
       }
-      const deleteFromAWS = await AwsUtil.deleteFromS3(databasePhoto.key);
+      const oldUploadId = databasePhoto.upload_id;
+
       let retrievedPhotos = await PhotoDAO.deletePhotosByID(photoObjId);
+
+      await UploadService.deleteUpload(oldUploadId);
 
       return {};
     } catch (e) {
