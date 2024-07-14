@@ -162,7 +162,7 @@ export default class UserService {
 
       const databaseUser = await UserDAO.getUserByIDFromDB(addedUserId);
 
-      const filteredUser = this.getFormattedUser(databaseUser);
+      const filteredUser = await this.getFormattedUser(databaseUser);
 
       filteredUser.login_method = "email";
 
@@ -206,7 +206,7 @@ export default class UserService {
 
       existingUser = await UserDAO.getUserByIDFromDB(existingUser._id);
 
-      const filteredUser = this.getFormattedUser(existingUser);
+      const filteredUser = await this.getFormattedUser(existingUser);
 
       filteredUser.login_method = "email";
 
@@ -297,7 +297,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = this.getFormattedUser(updatedUser);
+      const filteredUser = await this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -332,7 +332,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = this.getFormattedUser(updatedUser);
+      const filteredUser = await this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -367,7 +367,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = this.getFormattedUser(updatedUser);
+      const filteredUser = await this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -405,7 +405,7 @@ export default class UserService {
       });
 
       const updatedUser = await UserDAO.getUserByIDFromDB(existingUser._id);
-      const filteredUsers = this.getFormattedUser(updatedUser);
+      const filteredUsers = await this.getFormattedUser(updatedUser);
 
       filteredUsers.login_method = "email";
 
@@ -447,7 +447,7 @@ export default class UserService {
         );
       }
 
-      const filteredUser = this.getFormattedUser(existingUser);
+      const filteredUser = await this.getFormattedUser(existingUser);
       filteredUser.login_method = googleId ? "google" : "apple";
       return { user: filteredUser };
     } catch (e) {
@@ -520,7 +520,7 @@ export default class UserService {
         return "User with this token does not exists";
       }
 
-      const filteredUser = this.getFormattedUser(databaseUser);
+      const filteredUser = await this.getFormattedUser(databaseUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -528,7 +528,12 @@ export default class UserService {
     }
   }
 
-  static getFormattedUser(rawUser) {
+  static async getFormattedUser(rawUser) {
+    const [printAdded, photoAdded, wiritingAdded] = await Promise.all([
+      PrintService.checkPrintsAddedByUserId(rawUser._id),
+      PhotoService.checkPhotosAddedByUserId(rawUser._id),
+      WritingService.checkWritingAddedByUserId(rawUser._id),
+    ]);
     const filteredUser = PatternUtil.filterParametersFromObject(rawUser, [
       "_id",
       "fcm_token",
@@ -537,7 +542,9 @@ export default class UserService {
       "role",
       "password",
     ]);
-
+    filteredUser.fingerprints_added = printAdded;
+    filteredUser.photos_added = photoAdded;
+    filteredUser.handwritings_added = wiritingAdded;
     filteredUser.notifications_enabled =
       rawUser.fcm_token !== null && rawUser.fcm_token !== "x";
     return filteredUser;

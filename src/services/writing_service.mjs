@@ -138,4 +138,18 @@ export default class WritingService {
       return e.message;
     }
   }
+
+  static async checkWritingAddedByUserId(userId) {
+    try {
+      let retrievedPrint = await WritingDAO.getAnyFirstWriting(userId);
+
+      if (!retrievedPrint) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
 }

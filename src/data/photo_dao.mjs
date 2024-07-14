@@ -83,4 +83,18 @@ export default class PhotoDAO {
       throw new Error(`Unable to delete photo: ${e}`);
     }
   }
+
+  static async getAnyFirstPhoto(user_id) {
+    try {
+      const print = await photocon.findOne({
+        user_id: user_id,
+        deleted_on: { $eq: null },
+      });
+
+      return print;
+    } catch (e) {
+      console.error(`Unable to get print by ID: ${e}`);
+      return null;
+    }
+  }
 }

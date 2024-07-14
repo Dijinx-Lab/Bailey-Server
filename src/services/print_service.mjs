@@ -178,6 +178,20 @@ export default class PrintService {
     }
   }
 
+  static async checkPrintsAddedByUserId(userId) {
+    try {
+      let retrievedPrint = await PrintsDAO.getAnyFirstPrint(userId);
+
+      if (!retrievedPrint) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
+
   static async getAllPrints(token) {
     try {
       let databaseUser = await UserService.getUserFromToken(token);

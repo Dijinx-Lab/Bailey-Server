@@ -48,6 +48,20 @@ export default class PrintsDAO {
     }
   }
 
+  static async getAnyFirstPrint(user_id) {
+    try {
+      const print = await printcon.findOne({
+        user_id: user_id,
+        deleted_on: { $eq: null },
+      });
+
+      return print;
+    } catch (e) {
+      console.error(`Unable to get print by ID: ${e}`);
+      return null;
+    }
+  }
+
   static async updatePrintsFieldByID(id, fieldsToUpdate) {
     try {
       const print = await printcon.findOneAndUpdate(

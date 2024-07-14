@@ -85,4 +85,18 @@ export default class WritingDAO {
       throw new Error(`Unable to delete writing: ${e}`);
     }
   }
+
+  static async getAnyFirstWriting(user_id) {
+    try {
+      const print = await writingcon.findOne({
+        user_id: user_id,
+        deleted_on: { $eq: null },
+      });
+
+      return print;
+    } catch (e) {
+      console.error(`Unable to get print by ID: ${e}`);
+      return null;
+    }
+  }
 }

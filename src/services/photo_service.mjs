@@ -131,4 +131,18 @@ export default class PhotoService {
       return e.message;
     }
   }
+
+  static async checkPhotosAddedByUserId(userId) {
+    try {
+      let retrievedPrint = await PhotoDAO.getAnyFirstPhoto(userId);
+
+      if (!retrievedPrint) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      return e.message;
+    }
+  }
 }
