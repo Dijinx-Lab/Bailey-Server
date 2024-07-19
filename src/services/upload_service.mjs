@@ -38,7 +38,7 @@ export default class UploadService {
         ? `${folder}/${filename}${ext}`
         : `${filename}${ext}`;
 
-      const access_url = await AwsUtil.uploadToS3(file, folder, createdOn, ext);
+      const access_url = await AwsUtil.uploadToS3(file, formattedKey);
 
       const document = {
         user_id: databaseUser._id,
@@ -73,8 +73,8 @@ export default class UploadService {
 
   static async deleteUpload(uploadId) {
     try {
-      const databaseUpload = await UploadService.getUploadByIDFromDB(uploadId);
-      if (!databaseUser) {
+      const databaseUpload = await UploadDAO.getUploadByIDFromDB(uploadId);
+      if (!databaseUpload) {
         return "No upload found for this ID";
       }
 
