@@ -11,7 +11,4 @@ router
   .route(baseRoute + "/add")
   .post(checkTokenMiddleware, UploadController.apiAddUpload);
 
-
-
-
 export default router;
