@@ -212,10 +212,14 @@ export default class PrintService {
         await Promise.all(
           retrievedPrint.map(async (print) => {
             let filteredPrint = this.getFormattedPrint(print);
-            print.change_key = print.upload_id;
+
             filteredPrint = await PatternUtil.replaceIdWithUpload(
               filteredPrint
             );
+
+            filteredPrint.change_key = filteredPrint.is_skipped
+              ? print.upload_id
+              : filteredPrint.upload.access_url;
 
             if (print.hand === "left") {
               leftHandPrints.push(filteredPrint);
