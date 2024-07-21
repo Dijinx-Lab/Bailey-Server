@@ -212,6 +212,7 @@ export default class PrintService {
         await Promise.all(
           retrievedPrint.map(async (print) => {
             let filteredPrint = this.getFormattedPrint(print);
+            print.change_key = print.upload_id;
             filteredPrint = await PatternUtil.replaceIdWithUpload(
               filteredPrint
             );
