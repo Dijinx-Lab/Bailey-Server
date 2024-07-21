@@ -218,7 +218,7 @@ export default class PrintService {
             );
 
             filteredPrint.change_key = filteredPrint.is_skipped
-              ? print.upload_id
+              ? "skip"
               : filteredPrint.upload.access_url;
 
             if (print.hand === "left") {
@@ -252,6 +252,7 @@ export default class PrintService {
         handPrints.push({ finger: finger, hand: hand, change_key: null });
       }
     });
+
     return handPrints;
   }
 }
