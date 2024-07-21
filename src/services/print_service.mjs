@@ -54,7 +54,7 @@ export default class PrintService {
       if (existingPrint) {
         return "Print already allotted for this finger";
       }
-      const isSkipped = upload_id === "skipped";
+      const isSkipped = upload_id === "skip";
       const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
       const createdOn = new Date();
       const deletedOn = null;
@@ -92,7 +92,7 @@ export default class PrintService {
   static async updatePrint(printId, upload_id) {
     try {
       const printObjId = new ObjectId(printId);
-      const isSkipped = upload_id === "skipped";
+      const isSkipped = upload_id === "skip";
       const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
       let databasePrint = await PrintsDAO.getPrintByIDFromDB(printObjId);
 
