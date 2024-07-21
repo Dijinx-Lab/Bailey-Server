@@ -229,6 +229,9 @@ export default class PrintService {
           })
         );
 
+        leftHandPrints = this.addMissingFingers(leftHandPrints, hands.LEFT);
+        rightHandPrints = this.addMissingFingers(rightHandPrints, hands.RIGHT);
+
         return {
           left_hand: leftHandPrints,
           right_hand: rightHandPrints,
@@ -237,5 +240,18 @@ export default class PrintService {
     } catch (e) {
       return e.message;
     }
+  }
+
+  static addMissingFingers(handPrints, hand) {
+    const existingFingers = new Set(
+      handPrints.map((handPrint) => handPrint.finger)
+    );
+
+    Object.values(fingers).forEach((finger) => {
+      if (!existingFingers.has(finger)) {
+        handPrints.push({ finger: finger, hand: hand, change_key: null });
+      }
+    });
+    return handPrints;
   }
 }
