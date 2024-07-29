@@ -147,7 +147,7 @@ export default class UserService {
       const userDocument = {
         name: name,
         email: email,
-        fcm_token: fcmToken,
+        fcm_token: fcmToken ?? "x",
         role: "user",
         token: authToken,
         password: hashedPassword,
@@ -262,32 +262,36 @@ export default class UserService {
     try {
       let databaseUser = await this.getUserFromToken(token);
       const validUpdateFields = {};
-      if (!databaseUser.password) {
-        throw new Error("SSO Users cannot update email.");
-      }
       for (const field in updateFields) {
-        if (Object.prototype.hasOwnProperty.call(updateFields, field)) {
+        if (updateFields.hasOwnProperty(field)) {
           const value = updateFields[field];
-          if (field === "name") {
-            const nameCheck = PatternUtil.checkAlphabeticName(value);
-            if (!nameCheck) {
-              throw new Error(
-                "Invalid name format. Name should contain only alphabetic characters."
-              );
-            }
-          } else if (field === "email") {
-            const emailCheck = PatternUtil.checkEmailPattern(value);
-            if (!emailCheck) {
-              throw new Error("Invalid email format.");
-            }
-            const emailExists = await UserDAO.getUserByEmailFromDB(value);
-            if (emailExists) {
-              throw new Error("Email already exists.");
-            }
+          switch (field) {
+            case "name":
+              if (!PatternUtil.checkAlphabeticName(value)) {
+                throw new Error(
+                  "Invalid name format. Name should contain only alphabetic characters"
+                );
+              }
+              break;
+            case "email":
+              if (databaseUser.email !== value) {
+                if (!databaseUser.password) {
+                  throw new Error("SSO Users cannot update email");
+                }
+                if (!PatternUtil.checkEmailPattern(value)) {
+                  throw new Error("Invalid email format");
+                }
+                if (await UserDAO.getUserByEmailFromDB(value)) {
+                  throw new Error("Email already exists");
+                }
+              }
+
+              break;
           }
           validUpdateFields[field] = value;
         }
       }
+
       const processedUpdateFields =
         this.convertToDotNotation(validUpdateFields);
 
@@ -495,7 +499,7 @@ export default class UserService {
     const userDocument = {
       name: name,
       email: email,
-      fcm_token: fcmToken,
+      fcm_token: fcmToken ?? "x",
       role: "user",
       token: authToken,
       password: null,
@@ -536,7 +540,7 @@ export default class UserService {
     ]);
     const filteredUser = PatternUtil.filterParametersFromObject(rawUser, [
       "_id",
-      "fcm_token",
+      // "fcm_token",
       "created_on",
       "deleted_on",
       "role",

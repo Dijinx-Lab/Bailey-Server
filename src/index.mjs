@@ -32,6 +32,6 @@ MongoClient.connect(uri, {
     FirebaseUtility.initializeApp();
     AwsUtil.initialize();
     app.listen(port, () => {
-      console.log(`dev server listening on ${port}`);
+      console.log(`PROD server listening on ${port}`);
     });
   });
