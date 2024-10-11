@@ -42,7 +42,7 @@ export default class WritingDAO {
     try {
       const photos = await writingcon
         .find({
-          user_id: user_id,
+          session_id: user_id,
           deleted_on: { $eq: null },
         })
         .sort({ created_on: 1 })
@@ -77,9 +77,18 @@ export default class WritingDAO {
     }
   }
 
-  static async deleteWritingsByUserID(user_id) {
+  static async deleteAllUserWritings(user_id) {
     try {
       const result = await writingcon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete writing: ${e}`);
+    }
+  }
+
+  static async deleteWritingsBySessionId(user_id) {
+    try {
+      const result = await writingcon.deleteMany({ session_id: user_id });
       return result.deletedCount > 0;
     } catch (e) {
       throw new Error(`Unable to delete writing: ${e}`);
@@ -89,7 +98,7 @@ export default class WritingDAO {
   static async getAnyFirstWriting(user_id) {
     try {
       const print = await writingcon.findOne({
-        user_id: user_id,
+        session_id: user_id,
         deleted_on: { $eq: null },
       });
 

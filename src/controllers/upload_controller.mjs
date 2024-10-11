@@ -10,22 +10,20 @@ export default class UploadController {
   static async apiAddUpload(req, res, next) {
     try {
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      
+
       upload.any()(req, res, async function (err) {
         if (err) {
           const errorMessage =
             err.code === "LIMIT_FILE_SIZE"
               ? "File size exceeds the limit of 15MB"
               : err.message;
-      
+
           return res.status(err.code === "LIMIT_FILE_SIZE" ? 413 : 500).json({
             success: false,
             data: {},
             message: errorMessage,
           });
         }
-
-        
 
         if (!req.files || req.files.length === 0) {
           return res.status(400).json({
@@ -36,11 +34,13 @@ export default class UploadController {
         }
 
         const folder = req.body.folder;
+        const fileName = req.body.file_name;
         const file = req.files[0];
 
         try {
           const serviceResponse = await UploadService.addUpload(
             file,
+            fileName,
             folder,
             token
           );
@@ -53,7 +53,6 @@ export default class UploadController {
               : serviceResponse,
           });
         } catch (e) {
-          
           return res
             .status(500)
             .json({ success: false, data: {}, message: e.message });

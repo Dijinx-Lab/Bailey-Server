@@ -1,41 +1,33 @@
 import express from "express";
-import UserController from "../controllers/user_controller.mjs";
-import PhotosController from "../controllers/photos_controller.mjs";
+
 import checkRequiredFieldsMiddleware from "../middleware/check_required_fields_middleware.mjs";
 import checkTokenMiddleware from "../middleware/check_token_middleware.mjs";
+import SessionController from "../controllers/session_controller.mjs";
 // import { Omics } from "aws-sdk";
 
 const router = express.Router();
 
-const baseRoute = "/photos";
+const baseRoute = "/sessions";
 
 //api routes
 router
   .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware(["upload_id", "session_id"]),
+    checkRequiredFieldsMiddleware(["first_name", "last_name", "date_of_birth"]),
     checkTokenMiddleware,
-    PhotosController.apiAddPhoto
+    SessionController.apiAddSession
   );
 
 router
   .route(baseRoute + "/list")
-  .get(
-    checkTokenMiddleware,
-    checkRequiredFieldsMiddleware(["id"]),
-    PhotosController.apiGetAllPhotos
-  );
+  .get(checkTokenMiddleware, SessionController.apiGetAllSessions);
 
 router
   .route(baseRoute + "/delete")
-  .delete(checkTokenMiddleware, PhotosController.apiDeletePhotos);
-
-router
-  .route(baseRoute + "/session/delete")
   .delete(
     checkTokenMiddleware,
     checkRequiredFieldsMiddleware(["id"]),
-    PhotosController.apiDeleteSessionPhotos
+    SessionController.apiDeleteSession
   );
 
 export default router;

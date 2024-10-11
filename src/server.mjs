@@ -5,6 +5,9 @@ import photoRoutes from "./routes/photo_routes.mjs";
 import printRoutes from "./routes/prints_routes.mjs";
 import writingRoutes from "./routes/writings_routes.mjs";
 import uploadRoutes from "./routes/upload_routes.mjs";
+import sessionRoutes from "./routes/session_routes.mjs";
+import commonsRoutes from "./routes/commons_route.mjs";
+
 const app = express();
 
 app.use(cors());
@@ -17,6 +20,8 @@ app.use(baseUrl, uploadRoutes);
 app.use(baseUrl, photoRoutes);
 app.use(baseUrl, printRoutes);
 app.use(baseUrl, writingRoutes);
+app.use(baseUrl, sessionRoutes);
+app.use(baseUrl, commonsRoutes);
 
 app.use("*", (req, res) =>
   res.status(404).json({

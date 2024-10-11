@@ -9,6 +9,7 @@ import PhotoService from "./services/photo_service.mjs";
 import PrintService from "./services/print_service.mjs";
 import WritingService from "./services/writing_service.mjs";
 import UploadService from "./services/upload_service.mjs";
+import SessionService from "./services/session_service.mjs";
 const port = appConfig.server.port;
 
 const username = encodeURIComponent(databaseConfig.database.username);
@@ -29,8 +30,11 @@ MongoClient.connect(uri, {
     await PhotoService.connectDatabase(client);
     await PrintService.connectDatabase(client);
     await WritingService.connectDatabase(client);
+    await SessionService.connectDatabase(client);
+
     FirebaseUtility.initializeApp();
     AwsUtil.initialize();
+
     app.listen(port, () => {
       console.log(`PROD server listening on ${port}`);
     });

@@ -13,7 +13,7 @@ const baseRoute = "/writings";
 router
   .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware(["upload_id"]),
+    checkRequiredFieldsMiddleware(["upload_id", "session_id"]),
     checkTokenMiddleware,
     WritingsController.apiAddWritings
   );
@@ -28,6 +28,18 @@ router
 
 router
   .route(baseRoute + "/list")
-  .get(checkTokenMiddleware, WritingsController.apiGetAllWritings);
+  .get(
+    checkTokenMiddleware,
+    checkRequiredFieldsMiddleware(["id"]),
+    WritingsController.apiGetAllWritings
+  );
+
+router
+  .route(baseRoute + "/session/delete")
+  .delete(
+    checkTokenMiddleware,
+    checkRequiredFieldsMiddleware(["id"]),
+    WritingsController.apiDeleteSessionWritings
+  );
 
 export default router;

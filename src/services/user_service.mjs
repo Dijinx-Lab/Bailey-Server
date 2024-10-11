@@ -2,14 +2,8 @@ import UserDAO from "../data/user_dao.mjs";
 import TokenUtil from "../utility/token_util.mjs";
 import PatternUtil from "../utility/pattern_util.mjs";
 import AuthUtil from "../utility/auth_util.mjs";
-// import EmailUtility from "../utility/email_util.mjs";
-import PrintsDAO from "../data/prints_dao.mjs";
-import PhotoDAO from "../data/photo_dao.mjs";
-import WritingDAO from "../data/writing_dao.mjs";
-import UploadService from "./upload_service.mjs";
-import PhotoService from "./photo_service.mjs";
-import PrintService from "./print_service.mjs";
-import WritingService from "./writing_service.mjs";
+import SessionService from "./session_service.mjs";
+import AwsUtil from "../utility/aws_util.mjs";
 
 export default class UserService {
   static async connectDatabase(client) {
@@ -145,14 +139,20 @@ export default class UserService {
       });
 
       const userDocument = {
-        name: name,
+        contact_name: name,
         email: email,
+        company_name: "",
+        company_location: "",
         fcm_token: fcmToken ?? "x",
         role: "user",
         token: authToken,
         password: hashedPassword,
         google_id: null,
         apple_id: null,
+        last_signin_on: createdOn,
+        email_verified_on: null,
+        email_verification_code: "",
+        password_verification_code: "",
         last_signin_on: createdOn,
         created_on: createdOn,
         deleted_on: deletedOn,
@@ -161,6 +161,8 @@ export default class UserService {
       const addedUserId = await UserDAO.addUserToDB(userDocument);
 
       const databaseUser = await UserDAO.getUserByIDFromDB(addedUserId);
+
+      await this.sendVerification("email", databaseUser.email);
 
       const filteredUser = await this.getFormattedUser(databaseUser);
 
@@ -176,41 +178,39 @@ export default class UserService {
     try {
       let existingUser = await UserDAO.getUserByEmailFromDB(email);
 
-      let verification = existingUser.verification;
       if (type === "email") {
-        const emailOtp = verification.email;
+        const emailOtp = existingUser.email_verification_code;
 
         if (code != emailOtp) {
           return "Please enter a valid code, the provided one is incorrect";
         }
         const emailVerifiedOn = new Date();
-        delete verification[email];
         const processedUpdateFields = {
           email_verified_on: emailVerifiedOn,
+          email_verification_code: "",
         };
         existingUser = await UserDAO.updateUserFieldByID(
           existingUser._id,
           processedUpdateFields
         );
-        existingUser.login_method = "email";
+        return {};
       } else if (type === "password") {
-        const passwordOtp = verification.password;
+        const passwordOtp = existingUser.password_verification_code;
         if (code != passwordOtp) {
           return "Please enter a valid code, the provided one is incorrect";
         } else {
+          const processedUpdateFields = {
+            password_verification_code: "",
+          };
+          existingUser = await UserDAO.updateUserFieldByID(
+            existingUser._id,
+            processedUpdateFields
+          );
           return {};
         }
       } else {
         return "Mismatched type";
       }
-
-      existingUser = await UserDAO.getUserByIDFromDB(existingUser._id);
-
-      const filteredUser = await this.getFormattedUser(existingUser);
-
-      filteredUser.login_method = "email";
-
-      return { user: filteredUser };
     } catch (e) {
       return e.message;
     }
@@ -231,27 +231,21 @@ export default class UserService {
       let verification;
       if (type == "email") {
         verification = {
-          email: otpCode,
+          email_verification_code: otpCode,
         };
       } else {
         verification = {
-          password: otpCode,
+          password_verification_code: otpCode,
         };
       }
-      const processedUpdateFields = this.convertToDotNotation({
-        verification: verification,
-      });
+      const processedUpdateFields = this.convertToDotNotation(verification);
 
       existingUser = await UserDAO.updateUserFieldByID(
         existingUser._id,
         processedUpdateFields
       );
 
-      // const emailResponse = await EmailUtility.sendMail(
-      //   email,
-      //   "Verify your account with Baily & Bailey ",
-      //   `<h1>${otpCode}</h1>`
-      // );
+      await AwsUtil.sendEmail(existingUser.email, type == "password", otpCode);
       return {};
     } catch (e) {
       return e.message;
@@ -266,7 +260,7 @@ export default class UserService {
         if (updateFields.hasOwnProperty(field)) {
           const value = updateFields[field];
           switch (field) {
-            case "name":
+            case "name" || "company_name":
               if (!PatternUtil.checkAlphabeticName(value)) {
                 throw new Error(
                   "Invalid name format. Name should contain only alphabetic characters"
@@ -413,6 +407,10 @@ export default class UserService {
 
       filteredUsers.login_method = "email";
 
+      if (filteredUsers.email_verified_on == null) {
+        await this.sendVerification("email", filteredUsers.email);
+      }
+
       return { user: filteredUsers };
     } catch (e) {
       return e.message;
@@ -497,14 +495,19 @@ export default class UserService {
     });
 
     const userDocument = {
-      name: name,
+      contact_name: name,
       email: email,
+      company_name: "",
+      company_location: "",
       fcm_token: fcmToken ?? "x",
       role: "user",
       token: authToken,
       password: null,
       google_id: googleId ?? null,
       apple_id: appleId ?? null,
+      email_verified_on: createdOn,
+      email_verification_code: "",
+      password_verification_code: "",
       last_signin_on: createdOn,
       created_on: createdOn,
       deleted_on: deletedOn,
@@ -526,6 +529,10 @@ export default class UserService {
 
       const filteredUser = await this.getFormattedUser(databaseUser);
 
+      if (filteredUser.email_verified_on == null) {
+        await this.sendVerification("email", databaseUser.email);
+      }
+
       return { user: filteredUser };
     } catch (e) {
       return e.message;
@@ -533,22 +540,15 @@ export default class UserService {
   }
 
   static async getFormattedUser(rawUser) {
-    const [printAdded, photoAdded, wiritingAdded] = await Promise.all([
-      PrintService.checkPrintsAddedByUserId(rawUser._id),
-      PhotoService.checkPhotosAddedByUserId(rawUser._id),
-      WritingService.checkWritingAddedByUserId(rawUser._id),
-    ]);
     const filteredUser = PatternUtil.filterParametersFromObject(rawUser, [
-      "_id",
-      // "fcm_token",
       "created_on",
       "deleted_on",
       "role",
       "password",
+      "email_verification_code",
+      "password_verification_code",
     ]);
-    filteredUser.fingerprints_added = printAdded;
-    filteredUser.photos_added = photoAdded;
-    filteredUser.handwritings_added = wiritingAdded;
+
     filteredUser.notifications_enabled =
       rawUser.fcm_token !== null && rawUser.fcm_token !== "x";
     return filteredUser;
@@ -578,13 +578,13 @@ export default class UserService {
         return "No such user found";
       }
 
-      const [prints, photos, writings] = await Promise.all([
-        PrintService.deleteAllUserPrints(databaseUser._id),
-        PhotoService.deleteAllUserPhotos(databaseUser._id),
-        WritingService.deleteAllUserWritings(databaseUser._id),
-      ]);
+      const sessions = await SessionService.getAllSessionsInternal(token);
 
-      const deletedUser = await UserDAO.deleteUserByID(databaseUser._id);
+      await Promise.all(
+        sessions.map((e) => SessionService.deleteSession(e._id))
+      );
+
+      await UserDAO.deleteUserByID(databaseUser._id);
 
       return {};
     } catch (e) {

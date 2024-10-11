@@ -1,15 +1,16 @@
 import TokenUtil from "../utility/token_util.mjs";
-import PhotoService from "../services/photo_service.mjs";
+import SessionService from "../services/session_service.mjs";
 
-export default class PhotosController {
-  static async apiAddPhoto(req, res, next) {
+export default class SessionController {
+  static async apiAddSession(req, res, next) {
     try {
-      const { upload_id, session_id } = req.body;
+      const { first_name, last_name, date_of_birth } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PhotoService.addPhotoInDB(
+      const serviceResponse = await SessionService.addSession(
         token,
-        upload_id,
-        session_id
+        first_name,
+        last_name,
+        date_of_birth
       );
       if (typeof serviceResponse === "string") {
         res
@@ -19,7 +20,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Photo has been uploaded successfully",
+          message: "Fingerprints has been uploaded successfully",
         });
       }
     } catch (e) {
@@ -27,11 +28,10 @@ export default class PhotosController {
     }
   }
 
-  static async apiGetAllPhotos(req, res, next) {
+  static async apiGetAllSessions(req, res, next) {
     try {
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const { id } = req.query;
-      const serviceResponse = await PhotoService.getAllPhotos(id);
+      const serviceResponse = await SessionService.getAllSessions(token);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -40,7 +40,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "",
+          message: "Fingerprint Retrieved Successfully",
         });
       }
     } catch (e) {
@@ -48,11 +48,10 @@ export default class PhotosController {
     }
   }
 
-  static async apiDeletePhotos(req, res, next) {
+  static async apiDeleteSession(req, res, next) {
     try {
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
       const { id } = req.query;
-      const serviceResponse = await PhotoService.deletePhoto(token, id);
+      const serviceResponse = await SessionService.deleteSession(id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -61,28 +60,7 @@ export default class PhotosController {
         res.status(200).json({
           success: true,
           data: serviceResponse,
-          message: "Photo deleted",
-        });
-      }
-    } catch (e) {
-      res.status(500).json({ success: false, data: {}, message: e.message });
-    }
-  }
-
-  static async apiDeleteSessionPhotos(req, res, next) {
-    try {
-      const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const { id } = req.query;
-      const serviceResponse = await PhotoService.deleteAllSessionPhotos(id);
-      if (typeof serviceResponse === "string") {
-        res
-          .status(200)
-          .json({ success: false, data: {}, message: serviceResponse });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: serviceResponse,
-          message: "Photos deleted",
+          message: "Session Deleted Successfully",
         });
       }
     } catch (e) {

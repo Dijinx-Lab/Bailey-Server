@@ -16,7 +16,7 @@ export default class PhotoService {
     }
   }
 
-  static async addPhotoInDB(token, upload_id) {
+  static async addPhotoInDB(token, upload_id, session_id) {
     try {
       const createdOn = new Date();
       const deletedOn = null;
@@ -25,9 +25,11 @@ export default class PhotoService {
         return "User with this token does not exists";
       }
       const uploadObjId = new ObjectId(upload_id);
+      const sessionObjId = new ObjectId(session_id);
       const photoDocument = {
         user_id: databaseUser._id,
         upload_id: uploadObjId,
+        session_id: sessionObjId,
         created_on: createdOn,
         deleted_on: deletedOn,
       };
@@ -106,14 +108,44 @@ export default class PhotoService {
     }
   }
 
-  static async getAllPhotos(token) {
+  static async deleteAllSessionPhotos(sessionId) {
     try {
-      let databaseUser = await UserService.getUserFromToken(token);
-      if (!databaseUser) {
-        return "User with this token does not exist";
+      let objId = sessionId;
+      if (typeof objId === "string") {
+        objId = new ObjectId(sessionId);
       }
 
-      let retrievedPhotos = await PhotoDAO.getAllPhotosFromDB(databaseUser._id);
+      const databasePhotos = await PhotoDAO.getAllPhotosFromDB(objId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await PhotoDAO.deletePhotosBySesssionId(objId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        await UploadService.deleteUpload(oldUploadId);
+      });
+
+      await Promise.all(deleteUploadPromises);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async getAllPhotos(sessionId) {
+    try {
+      // let databaseUser = await UserService.getUserFromToken(token);
+      // if (!databaseUser) {
+      //   return "User with this token does not exist";
+      // }
+
+      let retrievedPhotos = await PhotoDAO.getAllPhotosFromDB(
+        new ObjectId(sessionId)
+      );
 
       if (!retrievedPhotos || retrievedPhotos.length === 0) {
         return { photos: [] };
@@ -132,7 +164,7 @@ export default class PhotoService {
     }
   }
 
-  static async checkPhotosAddedByUserId(userId) {
+  static async checkPhotosAddedBySessionId(userId) {
     try {
       let retrievedPrint = await PhotoDAO.getAnyFirstPhoto(userId);
 

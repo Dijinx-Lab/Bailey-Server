@@ -4,13 +4,14 @@ import PrintService from "../services/print_service.mjs";
 export default class PrintsController {
   static async apiAddFinger(req, res, next) {
     try {
-      const { finger, hand, upload_id } = req.body;
+      const { finger, hand, upload_id, session_id } = req.body;
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
       const serviceResponse = await PrintService.addPrint(
         token,
         finger,
         hand,
-        upload_id
+        upload_id,
+        session_id
       );
       if (typeof serviceResponse === "string") {
         res
@@ -31,9 +32,13 @@ export default class PrintsController {
   static async apiUpdatePrint(req, res, next) {
     try {
       const { id } = req.query;
-      const { upload_id } = req.body;
+      const { upload_id, session_id } = req.body;
 
-      const serviceResponse = await PrintService.updatePrint(id, upload_id);
+      const serviceResponse = await PrintService.updatePrint(
+        id,
+        upload_id,
+        session_id
+      );
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -75,7 +80,8 @@ export default class PrintsController {
   static async apiGetAllPrints(req, res, next) {
     try {
       const token = TokenUtil.cleanToken(req.headers["authorization"]);
-      const serviceResponse = await PrintService.getAllPrints(token);
+      const { id } = req.query;
+      const serviceResponse = await PrintService.getAllPrints(id);
       if (typeof serviceResponse === "string") {
         res
           .status(200)
@@ -85,6 +91,27 @@ export default class PrintsController {
           success: true,
           data: serviceResponse,
           message: "Fingerprint Retrieved Successfully",
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
+
+  static async apiDeleteSessionPrints(req, res, next) {
+    try {
+      const token = TokenUtil.cleanToken(req.headers["authorization"]);
+      const { id } = req.query;
+      const serviceResponse = await PrintService.deleteAllSessionPrints(id);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: "Fingerprints deleted",
         });
       }
     } catch (e) {

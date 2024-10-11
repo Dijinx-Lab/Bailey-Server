@@ -30,7 +30,7 @@ export default class PrintService {
     }
   }
 
-  static async addPrint(token, finger, hand, upload_id) {
+  static async addPrint(token, finger, hand, upload_id, session_id) {
     try {
       if (!Object.values(fingers).includes(finger)) {
         return `Finger is not of valid type, please choose from: ${Object.values(
@@ -56,10 +56,13 @@ export default class PrintService {
       }
       const isSkipped = upload_id === "skip";
       const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
+      const sessionObjId = new ObjectId(session_id);
+
       const createdOn = new Date();
       const deletedOn = null;
       const printDocument = {
         user_id: databaseUser._id,
+        session_id: sessionObjId,
         upload_id: uploadObjId,
         is_skipped: isSkipped,
         hand: hand,
@@ -89,7 +92,7 @@ export default class PrintService {
     return filteredPrint;
   }
 
-  static async updatePrint(printId, upload_id) {
+  static async updatePrint(printId, upload_id, session_id) {
     try {
       const printObjId = new ObjectId(printId);
       const isSkipped = upload_id === "skip";
@@ -178,7 +181,37 @@ export default class PrintService {
     }
   }
 
-  static async checkPrintsAddedByUserId(userId) {
+  static async deleteAllSessionPrints(sessionId) {
+    try {
+      let objId = sessionId;
+      if (typeof objId === "string") {
+        objId = new ObjectId(sessionId);
+      }
+
+      const databasePhotos = await PrintsDAO.getAllPrints(objId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await PrintsDAO.deletePrintsBySessionID(objId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        if (oldUploadId) {
+          await UploadService.deleteUpload(oldUploadId);
+        }
+      });
+
+      await Promise.all(deleteUploadPromises);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async checkPrintsAddedBySessionId(userId) {
     try {
       let retrievedPrint = await PrintsDAO.getAnyFirstPrint(userId);
 
@@ -192,13 +225,13 @@ export default class PrintService {
     }
   }
 
-  static async getAllPrints(token) {
+  static async getAllPrints(id) {
     try {
-      let databaseUser = await UserService.getUserFromToken(token);
-      if (!databaseUser) {
-        return "User with this token does not exist";
-      }
-      let retrievedPrint = await PrintsDAO.getAllPrints(databaseUser._id);
+      // let databaseUser = await UserService.getUserFromToken(token);
+      // if (!databaseUser) {
+      //   return "User with this token does not exist";
+      // }
+      let retrievedPrint = await PrintsDAO.getAllPrints(new ObjectId(id));
 
       if (!retrievedPrint || retrievedPrint.length === 0) {
         return {

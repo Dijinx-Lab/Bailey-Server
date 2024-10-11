@@ -4,10 +4,11 @@ import TokenUtil from "../utility/token_util.mjs";
 export default class UserController {
   static async apiCreateOrGetUserAccount(req, res, next) {
     try {
-      const { name, email, password, confirm_password, fcm_token } = req.body;
+      const { contact_name, email, password, confirm_password, fcm_token } =
+        req.body;
 
       const serviceResponse = await UserService.createUserAccount(
-        name,
+        contact_name,
         email,
         password,
         confirm_password,
@@ -64,11 +65,11 @@ export default class UserController {
 
   static async apiSsoUser(req, res, next) {
     try {
-      const { email, name, apple_id, google_id, fcm_token } = req.body;
+      const { email, contact_name, apple_id, google_id, fcm_token } = req.body;
 
       const serviceResponse = await UserService.ssoUser(
         email,
-        name,
+        contact_name,
         apple_id,
         google_id,
         fcm_token
@@ -205,12 +206,15 @@ export default class UserController {
 
   static async apiUpdateUserProfile(req, res, next) {
     try {
-      const { name, email, fcm_token } = req.body;
+      const { contact_name, email, fcm_token, company_name, company_location } =
+        req.body;
       const updateFields = Object.fromEntries(
         Object.entries({
-          name,
+          contact_name,
           email,
           fcm_token,
+          company_name,
+          company_location,
         }).filter(([_, value]) => value !== undefined && value !== null)
       );
       const token = TokenUtil.cleanToken(req.headers["authorization"]);

@@ -40,7 +40,7 @@ export default class PhotoDAO {
     try {
       const photos = await photocon
         .find({
-          user_id: user_id,
+          session_id: user_id,
           deleted_on: { $eq: null },
         })
         .sort({ created_on: 1 })
@@ -75,6 +75,15 @@ export default class PhotoDAO {
     }
   }
 
+  static async deletePhotosBySesssionId(user_id) {
+    try {
+      const result = await photocon.deleteMany({ session_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete photo: ${e}`);
+    }
+  }
+
   static async deletePhotosByID(id) {
     try {
       const result = await photocon.deleteOne({ _id: id });
@@ -87,7 +96,7 @@ export default class PhotoDAO {
   static async getAnyFirstPhoto(user_id) {
     try {
       const print = await photocon.findOne({
-        user_id: user_id,
+        session_id: user_id,
         deleted_on: { $eq: null },
       });
 

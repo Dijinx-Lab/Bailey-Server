@@ -38,7 +38,7 @@ export default class PrintsDAO {
   static async getAllPrints(user_id) {
     try {
       const print = await printcon
-        .find({ user_id: user_id, deleted_on: { $eq: null } })
+        .find({ session_id: user_id, deleted_on: { $eq: null } })
         .toArray();
 
       return print;
@@ -51,7 +51,7 @@ export default class PrintsDAO {
   static async getAnyFirstPrint(user_id) {
     try {
       const print = await printcon.findOne({
-        user_id: user_id,
+        session_id: user_id,
         deleted_on: { $eq: null },
       });
 
@@ -110,6 +110,15 @@ export default class PrintsDAO {
   static async deletePrintsByUserID(user_id) {
     try {
       const result = await printcon.deleteMany({ user_id: user_id });
+      return result.deletedCount > 0;
+    } catch (e) {
+      throw new Error(`Unable to delete prints: ${e}`);
+    }
+  }
+
+  static async deletePrintsBySessionID(user_id) {
+    try {
+      const result = await printcon.deleteMany({ session_id: user_id });
       return result.deletedCount > 0;
     } catch (e) {
       throw new Error(`Unable to delete prints: ${e}`);

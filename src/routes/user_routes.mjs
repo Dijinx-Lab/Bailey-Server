@@ -12,7 +12,7 @@ router
   .route(baseRoute + "/sign-up")
   .post(
     checkRequiredFieldsMiddleware([
-      "name",
+      "contact_name",
       "email",
       "password",
       "confirm_password",
@@ -30,7 +30,6 @@ router
 
 router.route(baseRoute + "/verify/send").post(
   checkRequiredFieldsMiddleware(["type", "email"]),
-
   UserController.apiSendVerification
 );
 
@@ -75,11 +74,7 @@ router
   );
 
 router
-.route(baseRoute + "/delete")
-.delete(
-  checkTokenMiddleware,
-  UserController.apiDeleteUser
-);
-
+  .route(baseRoute + "/delete")
+  .delete(checkTokenMiddleware, UserController.apiDeleteUser);
 
 export default router;

@@ -14,7 +14,12 @@ const baseRoute = "/prints";
 router
   .route(baseRoute + "/add")
   .post(
-    checkRequiredFieldsMiddleware(["finger", "hand", "upload_id"]),
+    checkRequiredFieldsMiddleware([
+      "finger",
+      "hand",
+      "upload_id",
+      "session_id",
+    ]),
     checkTokenMiddleware,
     PrintsController.apiAddFinger
   );
@@ -22,7 +27,7 @@ router
 router
   .route(baseRoute + "/edit")
   .put(
-    checkRequiredFieldsMiddleware(["id", "upload_id"]),
+    checkRequiredFieldsMiddleware(["id", "upload_id", "session_id"]),
     checkTokenMiddleware,
     PrintsController.apiUpdatePrint
   );
@@ -37,6 +42,18 @@ router
 
 router
   .route(baseRoute + "/list")
-  .get(checkTokenMiddleware, PrintsController.apiGetAllPrints);
+  .get(
+    checkTokenMiddleware,
+    checkRequiredFieldsMiddleware(["id"]),
+    PrintsController.apiGetAllPrints
+  );
+
+router
+  .route(baseRoute + "/session/delete")
+  .delete(
+    checkTokenMiddleware,
+    checkRequiredFieldsMiddleware(["id"]),
+    PrintsController.apiDeleteSessionPrints
+  );
 
 export default router;

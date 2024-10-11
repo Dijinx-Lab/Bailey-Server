@@ -1,8 +1,4 @@
-import TokenUtil from "../utility/token_util.mjs";
 import PatternUtil from "../utility/pattern_util.mjs";
-import AuthUtil from "../utility/auth_util.mjs";
-// import EmailUtility from "../utility/email_util.mjs";
-import PhotoDAO from "../data/photo_dao.mjs";
 import UserService from "./user_service.mjs";
 import WritingDAO from "../data/writing_dao.mjs";
 import UploadService from "./upload_service.mjs";
@@ -17,17 +13,19 @@ export default class WritingService {
     }
   }
 
-  static async addWritingInDB(token, upload_id) {
+  static async addWritingInDB(token, upload_id, session_id) {
     try {
       let databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
         return "User with this token does not exists";
       }
       const uploadObjId = new ObjectId(upload_id);
+      const sessionObjId = new ObjectId(session_id);
       const createdOn = new Date();
       const deletedOn = null;
       const writingDocument = {
         user_id: databaseUser._id,
+        session_id: sessionObjId,
         upload_id: uploadObjId,
         created_on: createdOn,
         deleted_on: deletedOn,
@@ -56,14 +54,14 @@ export default class WritingService {
     return filteredWriting;
   }
 
-  static async getAllHandwritings(token) {
+  static async getAllHandwritings(id) {
     try {
-      let databaseUser = await UserService.getUserFromToken(token);
-      if (!databaseUser) {
-        return "User with this token does not exist";
-      }
+      // let databaseUser = await UserService.getUserFromToken(id);
+      // if (!databaseUser) {
+      //   return "User with this token does not exist";
+      // }
       let retrievedWritings = await WritingDAO.getAllWritingFromDB(
-        databaseUser._id
+        new ObjectId(id)
       );
 
       if (!retrievedWritings || retrievedWritings.length === 0) {
@@ -139,7 +137,34 @@ export default class WritingService {
     }
   }
 
-  static async checkWritingAddedByUserId(userId) {
+  static async deleteAllSessionWritings(sessionId) {
+    try {
+      let objId = sessionId;
+      if (typeof objId === "string") {
+        objId = new ObjectId(sessionId);
+      }
+      const databasePhotos = await WritingDAO.getAllWritingFromDB(objId);
+
+      if (!databasePhotos || databasePhotos.length === 0) {
+        return {};
+      }
+
+      let retrievedPhotos = await WritingDAO.deleteWritingsBySessionId(objId);
+
+      const deleteUploadPromises = databasePhotos.map(async (photo) => {
+        const oldUploadId = photo.upload_id;
+        await UploadService.deleteUpload(oldUploadId);
+      });
+
+      await Promise.all(deleteUploadPromises);
+
+      return {};
+    } catch (e) {
+      return e.message;
+    }
+  }
+
+  static async checkWritingAddedBySessionId(userId) {
     try {
       let retrievedPrint = await WritingDAO.getAnyFirstWriting(userId);
 

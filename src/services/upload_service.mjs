@@ -23,7 +23,7 @@ export default class UploadService {
     }
   }
 
-  static async addUpload(file, folder, token) {
+  static async addUpload(file, fileName, folder, token) {
     try {
       const databaseUser = await UserService.getUserFromToken(token);
       if (!databaseUser) {
@@ -31,12 +31,12 @@ export default class UploadService {
       }
       const createdOn = new Date();
       const deletedOn = null;
-      const filename = createdOn.toISOString().replace(/[:.]/g, "-");
+      // const filename = createdOn.toISOString().replace(/[:.]/g, "-");
       const ext = path.extname(file.originalname);
 
       const formattedKey = folder
-        ? `${folder}/${filename}${ext}`
-        : `${filename}${ext}`;
+        ? `${folder}/${fileName}${ext}`
+        : `${fileName}${ext}`;
 
       const access_url = await AwsUtil.uploadToS3(file, formattedKey);
 
@@ -44,7 +44,7 @@ export default class UploadService {
         user_id: databaseUser._id,
         access_url: access_url,
         extension: ext,
-        file_name: filename,
+        file_name: fileName,
         key: formattedKey,
         created_on: createdOn,
         deleted_on: deletedOn,
