@@ -46,17 +46,19 @@ export default class PrintService {
       if (!databaseUser) {
         return "User with this token does not exists";
       }
-      const existingPrint = await PrintsDAO.getPrintByUserHandFinger(
-        databaseUser._id,
+
+      const isSkipped = upload_id === "skip";
+      const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
+      const sessionObjId = new ObjectId(session_id);
+
+      const existingPrint = await PrintsDAO.getPrintBySessionHandFinger(
+        sessionObjId,
         hand,
         finger
       );
       if (existingPrint) {
         return "Print already allotted for this finger";
       }
-      const isSkipped = upload_id === "skip";
-      const uploadObjId = isSkipped ? null : new ObjectId(upload_id);
-      const sessionObjId = new ObjectId(session_id);
 
       const createdOn = new Date();
       const deletedOn = null;
