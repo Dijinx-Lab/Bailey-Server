@@ -28,10 +28,12 @@ router
     UserController.apiVerifyCredential
   );
 
-router.route(baseRoute + "/verify/send").post(
-  checkRequiredFieldsMiddleware(["type", "email"]),
-  UserController.apiSendVerification
-);
+router
+  .route(baseRoute + "/verify/send")
+  .post(
+    checkRequiredFieldsMiddleware(["type", "email"]),
+    UserController.apiSendVerification
+  );
 
 router
   .route(baseRoute + "/sign-in")
@@ -76,5 +78,9 @@ router
 router
   .route(baseRoute + "/delete")
   .delete(checkTokenMiddleware, UserController.apiDeleteUser);
+
+router
+  .route(baseRoute + "/complete-data")
+  .get(checkTokenMiddleware, UserController.apiGetCompleteUserDetails);
 
 export default router;

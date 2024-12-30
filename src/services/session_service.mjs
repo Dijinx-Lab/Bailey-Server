@@ -34,7 +34,7 @@ export default class SessionService {
 
       const addedPrint = await SessionDAO.addSessionToDB(printDocument);
 
-      const printData = await this.getFormattedPrint(
+      const printData = await this.getFormattedSession(
         await SessionDAO.getSessionByIDFromDB(addedPrint)
       );
 
@@ -44,12 +44,13 @@ export default class SessionService {
     }
   }
 
-  static async getFormattedPrint(rawPrint) {
+  static async getFormattedSession(rawPrint) {
     const [printAdded, photoAdded, wiritingAdded] = await Promise.all([
       PrintService.checkPrintsAddedBySessionId(rawPrint._id),
       PhotoService.checkPhotosAddedBySessionId(rawPrint._id),
       WritingService.checkWritingAddedBySessionId(rawPrint._id),
     ]);
+
     const filteredPrint = PatternUtil.filterParametersFromObject(rawPrint, [
       "user_id",
       "created_on",
@@ -70,7 +71,7 @@ export default class SessionService {
       let retrievedPrints = await SessionDAO.getAllSessions(databaseUser._id);
       return {
         sessions: await Promise.all(
-          retrievedPrints.map((e) => this.getFormattedPrint(e))
+          retrievedPrints.map((e) => this.getFormattedSession(e))
         ),
       };
     } catch (e) {

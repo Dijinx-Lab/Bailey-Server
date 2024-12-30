@@ -4,6 +4,9 @@ import PatternUtil from "../utility/pattern_util.mjs";
 import AuthUtil from "../utility/auth_util.mjs";
 import SessionService from "./session_service.mjs";
 import AwsUtil from "../utility/aws_util.mjs";
+import PhotoService from "./photo_service.mjs";
+import WritingService from "./writing_service.mjs";
+import PrintService from "./print_service.mjs";
 
 export default class UserService {
   static async connectDatabase(client) {
@@ -164,7 +167,7 @@ export default class UserService {
 
       await this.sendVerification("email", databaseUser.email);
 
-      const filteredUser = await this.getFormattedUser(databaseUser);
+      const filteredUser = this.getFormattedUser(databaseUser);
 
       filteredUser.login_method = "email";
 
@@ -295,7 +298,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = await this.getFormattedUser(updatedUser);
+      const filteredUser = this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -330,7 +333,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = await this.getFormattedUser(updatedUser);
+      const filteredUser = this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -365,7 +368,7 @@ export default class UserService {
       );
 
       const updatedUser = await UserDAO.getUserByIDFromDB(databaseUser._id);
-      const filteredUser = await this.getFormattedUser(updatedUser);
+      const filteredUser = this.getFormattedUser(updatedUser);
 
       return { user: filteredUser };
     } catch (e) {
@@ -403,7 +406,7 @@ export default class UserService {
       });
 
       const updatedUser = await UserDAO.getUserByIDFromDB(existingUser._id);
-      const filteredUsers = await this.getFormattedUser(updatedUser);
+      const filteredUsers = this.getFormattedUser(updatedUser);
 
       filteredUsers.login_method = "email";
 
@@ -449,7 +452,7 @@ export default class UserService {
         );
       }
 
-      const filteredUser = await this.getFormattedUser(existingUser);
+      const filteredUser = this.getFormattedUser(existingUser);
       filteredUser.login_method = googleId ? "google" : "apple";
       return { user: filteredUser };
     } catch (e) {
@@ -527,7 +530,7 @@ export default class UserService {
         return "User with this token does not exists";
       }
 
-      const filteredUser = await this.getFormattedUser(databaseUser);
+      const filteredUser = this.getFormattedUser(databaseUser);
 
       if (filteredUser.email_verified_on == null) {
         await this.sendVerification("email", databaseUser.email);
@@ -539,7 +542,7 @@ export default class UserService {
     }
   }
 
-  static async getFormattedUser(rawUser) {
+  static getFormattedUser(rawUser) {
     const filteredUser = PatternUtil.filterParametersFromObject(rawUser, [
       "created_on",
       "deleted_on",
@@ -634,5 +637,80 @@ export default class UserService {
       }
     }
     return processedUpdateFields;
+  }
+
+  static async getCompleteUserDetails(authToken) {
+    try {
+      let databaseUser = await UserDAO.getUserByAuthTokenFromDB(authToken);
+      databaseUser = this.getFormattedUser(databaseUser);
+      databaseUser = PatternUtil.filterParametersFromObject(databaseUser, [
+        "_id",
+        "apple_id",
+        "google_id",
+        "token",
+        "fcm_token",
+      ]);
+
+      let sessions = await SessionService.getAllSessionsInternal(authToken);
+
+      sessions = await Promise.all(
+        sessions.map(async (e) => {
+          const [photos, writings, prints] = await Promise.all([
+            PhotoService.getAllPhotos(e._id.toString()),
+            WritingService.getAllHandwritings(e._id.toString()),
+            PrintService.getAllPrints(e._id.toString()),
+          ]);
+
+          e.handwritings = writings.handwritings;
+          e.photos = photos.photos;
+          e.fingerprints = {
+            left_hand: prints.left_hand,
+            right_hand: prints.right_hand,
+          };
+
+          return e;
+        })
+      );
+
+      sessions = sessions.map((e) => {
+        e.photos = e.photos.map((e) => e.upload.access_url);
+        e.handwritings = e.handwritings.map((e) => e.upload.access_url);
+        e.fingerprints.left_hand = e.fingerprints.left_hand.map((e) => {
+          e.upload = e.upload !== undefined ? e.upload.access_url : null;
+          return PatternUtil.filterParametersFromObject(e, [
+            "_id",
+            "session_id",
+            "upload_id",
+            "change_key",
+          ]);
+        });
+
+        e.fingerprints.right_hand = e.fingerprints.right_hand.map((e) => {
+          e.upload = e.upload !== undefined ? e.upload.access_url : null;
+          return PatternUtil.filterParametersFromObject(e, [
+            "_id",
+            "session_id",
+            "upload_id",
+            "change_key",
+          ]);
+        });
+
+        return PatternUtil.filterParametersFromObject(e, [
+          "_id",
+          "user_id",
+          "created_on",
+          "deleted_on",
+        ]);
+      });
+
+      return {
+        user_data: {
+          details: databaseUser,
+          sessions: sessions,
+        },
+      };
+    } catch (e) {
+      return e.message;
+    }
   }
 }

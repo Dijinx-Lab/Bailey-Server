@@ -95,8 +95,7 @@ class AwsUtil {
     };
     try {
       const command = new SendEmailCommand(params);
-      const response = await AwsUtil.ses.send(command);
-      console.log("Email sent successfully:", response);
+      await AwsUtil.ses.send(command);
     } catch (err) {
       console.error("Error sending email:", err);
     }

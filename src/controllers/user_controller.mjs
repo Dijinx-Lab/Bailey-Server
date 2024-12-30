@@ -287,4 +287,24 @@ export default class UserController {
       res.status(500).json({ success: false, data: {}, message: e.message });
     }
   }
+
+  static async apiGetCompleteUserDetails(req, res, next) {
+    try {
+      const token = TokenUtil.cleanToken(req.headers["authorization"]);
+      const serviceResponse = await UserService.getCompleteUserDetails(token);
+      if (typeof serviceResponse === "string") {
+        res
+          .status(200)
+          .json({ success: false, data: {}, message: serviceResponse });
+      } else {
+        res.status(200).json({
+          success: true,
+          data: serviceResponse,
+          message: null,
+        });
+      }
+    } catch (e) {
+      res.status(500).json({ success: false, data: {}, message: e.message });
+    }
+  }
 }
